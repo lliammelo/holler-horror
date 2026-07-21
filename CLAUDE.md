@@ -18,6 +18,7 @@ Design source of truth: [Docs/holler-horror-gdd.md](Docs/holler-horror-gdd.md). 
 ## Code style
 
 - One public type per file, file named after the type. `sealed` unless designed for inheritance.
+  - **Hard rule for MonoBehaviours/ScriptableObjects:** the file name MUST match the class name — Unity silently serializes broken script references otherwise (components exist in the editor session but come back as missing scripts on scene load). This bit us with `SurfaceTag`; don't repeat it.
 - Serialized fields: `[SerializeField] private`, camelCase, with `[Tooltip]` where the name alone is ambiguous. No public fields.
 - Design-tunable numbers live in serialized fields (later: ScriptableObject configs), never hard-coded constants in logic.
 - Comments explain constraints and intent, not restate code.

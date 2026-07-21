@@ -32,7 +32,7 @@ namespace HollerHorror.Editor
 
             BuildLighting();
             BuildTerrain(ground, structure, accent);
-            BuildPlayer();
+            BuildPlayer(new Vector3(0, 0.05f, -20));
 
             Directory.CreateDirectory(Path.GetDirectoryName(ScenePath));
             EditorSceneManager.SaveScene(scene, ScenePath);
@@ -86,8 +86,9 @@ namespace HollerHorror.Editor
         {
             var root = new GameObject("Greybox").transform;
 
-            // Ground slab
-            Box(root, "Ground", new Vector3(0, -0.5f, 0), new Vector3(80, 1, 80), ground);
+            // Ground slab — default surface is grass (quiet)
+            var groundGo = Box(root, "Ground", new Vector3(0, -0.5f, 0), new Vector3(80, 1, 80), ground);
+            groundGo.AddComponent<HollerHorror.Senses.SurfaceTag>().Type = HollerHorror.Senses.SurfaceType.Grass;
 
             // Perimeter walls
             Box(root, "Wall_N", new Vector3(0, 2, 40.5f), new Vector3(82, 4, 1), structure);
@@ -133,14 +134,14 @@ namespace HollerHorror.Editor
             return go;
         }
 
-        private static void BuildPlayer()
+        internal static GameObject BuildPlayer(Vector3 position)
         {
             var inputActions = AssetDatabase.LoadAssetAtPath<InputActionAsset>(InputActionsPath);
             if (inputActions == null)
                 throw new FileNotFoundException($"Input actions asset not found at {InputActionsPath}");
 
             var player = new GameObject("Player");
-            player.transform.position = new Vector3(0, 0.05f, -20);
+            player.transform.position = position;
 
             var cc = player.AddComponent<CharacterController>();
             cc.height = 1.8f;
@@ -170,11 +171,15 @@ namespace HollerHorror.Editor
             so.FindProperty("cameraPivot").objectReferenceValue = pivot.transform;
             so.ApplyModifiedPropertiesWithoutUndo();
 
+            var emitter = player.AddComponent<HollerHorror.Senses.FootstepNoiseEmitter>();
+
             var hud = player.AddComponent<PlayerDebugHud>();
             var hudSo = new SerializedObject(hud);
             hudSo.FindProperty("controller").objectReferenceValue = controller;
             hudSo.FindProperty("stamina").objectReferenceValue = stamina;
+            hudSo.FindProperty("noiseEmitter").objectReferenceValue = emitter;
             hudSo.ApplyModifiedPropertiesWithoutUndo();
+            return player;
         }
 
         private static Material CreateMaterial(string name, Color color)

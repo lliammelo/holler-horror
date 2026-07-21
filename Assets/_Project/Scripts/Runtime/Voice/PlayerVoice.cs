@@ -28,6 +28,10 @@ namespace HollerHorror.Voice
         private int packetsSent;
         private int lastPacketBytes;
 
+        [SerializeField, Tooltip("Audible radius (m) of normal talking for entity hearing.")]
+        private float voiceNoiseRadius = 15f;
+        private float lastVoiceNoiseTime;
+
         public override void OnNetworkSpawn()
         {
             if (!IsOwner)
@@ -62,6 +66,14 @@ namespace HollerHorror.Voice
 
                 packetsSent++;
                 lastPacketBytes = written;
+
+                // Talking is audible to entities (GDD: voice feeds Wendigo aggro). Throttled.
+                if (Time.time - lastVoiceNoiseTime > 0.33f)
+                {
+                    lastVoiceNoiseTime = Time.time;
+                    Senses.NoiseBus.Emit(new Senses.NoiseEvent(
+                        transform.position, voiceNoiseRadius, 0.6f, Senses.NoiseKind.Voice, transform));
+                }
 
                 // Capture our own voice too, so the Fetch replay (F5) is testable solo.
                 VoiceEchoLibrary.Record(OwnerClientId, packet);

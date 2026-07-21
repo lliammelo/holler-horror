@@ -51,6 +51,10 @@ namespace HollerHorror.Editor
                 PlayerPrefab = playerPrefab,
             };
 
+            var sensesDebug = new GameObject("SensesDebug");
+            sensesDebug.AddComponent<NoiseDebugRenderer>();
+            sensesDebug.AddComponent<PlaceholderFootstepAudio>();
+
             // Steam session glue + Fetch replay debugger.
             var sessionGo = new GameObject("SteamSession");
             var session = sessionGo.AddComponent<SteamSessionManager>();
@@ -111,10 +115,13 @@ namespace HollerHorror.Editor
             controllerSo.FindProperty("cameraPivot").objectReferenceValue = pivot.transform;
             controllerSo.ApplyModifiedPropertiesWithoutUndo();
 
+            var emitter = player.AddComponent<HollerHorror.Senses.FootstepNoiseEmitter>();
+
             var hud = player.AddComponent<PlayerDebugHud>();
             var hudSo = new SerializedObject(hud);
             hudSo.FindProperty("controller").objectReferenceValue = controller;
             hudSo.FindProperty("stamina").objectReferenceValue = stamina;
+            hudSo.FindProperty("noiseEmitter").objectReferenceValue = emitter;
             hudSo.ApplyModifiedPropertiesWithoutUndo();
 
             var voice = player.AddComponent<PlayerVoice>();

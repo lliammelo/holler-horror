@@ -10,6 +10,7 @@ namespace HollerHorror.Debugging
     {
         [SerializeField] private Player.FirstPersonController controller;
         [SerializeField] private Player.PlayerStamina stamina;
+        [SerializeField] private Senses.FootstepNoiseEmitter noiseEmitter;
 
         private void OnGUI()
         {
@@ -20,6 +21,12 @@ namespace HollerHorror.Debugging
             GUILayout.Label($"State: {controller.Locomotion} / {controller.CurrentStance}");
             GUILayout.Label($"Speed: {controller.CurrentSpeed:F2} m/s (norm {controller.CurrentSpeedNormalized:F2})");
             GUILayout.Label($"Stamina: {stamina.Current:F0} / {stamina.Max:F0}" + (stamina.CanSprint ? "" : "  [EXHAUSTED]"));
+            if (noiseEmitter != null)
+            {
+                var last = noiseEmitter.LastEmitted;
+                GUILayout.Label($"Surface: {noiseEmitter.CurrentSurface}  on [{noiseEmitter.GroundHitName}]" +
+                                (last.HasValue ? $"  r={last.Value.Radius:F1}m" : ""));
+            }
             GUILayout.EndArea();
         }
     }

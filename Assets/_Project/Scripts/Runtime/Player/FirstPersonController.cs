@@ -64,6 +64,9 @@ namespace HollerHorror.Player
         /// <summary>Current speed normalized against sprint speed, 0..1.</summary>
         public float CurrentSpeedNormalized => Mathf.Clamp01(CurrentSpeed / sprintSpeed);
 
+        /// <summary>Eye-level transform — entity vision raycasts target this.</summary>
+        public Transform Head => cameraPivot;
+
         private void Awake()
         {
             controller = GetComponent<CharacterController>();
@@ -84,6 +87,7 @@ namespace HollerHorror.Player
 
         private void OnEnable()
         {
+            PlayerRegistry.Register(this);
             inputActions.FindActionMap("Player", throwIfNotFound: true).Enable();
             crouchAction.performed += OnCrouchPerformed;
             Cursor.lockState = CursorLockMode.Locked;
@@ -92,6 +96,7 @@ namespace HollerHorror.Player
 
         private void OnDisable()
         {
+            PlayerRegistry.Unregister(this);
             crouchAction.performed -= OnCrouchPerformed;
             inputActions.FindActionMap("Player").Disable();
             Cursor.lockState = CursorLockMode.None;
