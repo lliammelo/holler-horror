@@ -5,8 +5,9 @@ Design source of truth: [Docs/holler-horror-gdd.md](Docs/holler-horror-gdd.md). 
 ## Project
 
 - Unity **6000.4.3f1**, URP, Input System (new), PC/Steam only for EA.
-- Milestones M0–M7 are defined in GDD §13. Build in order; every milestone stays playable.
-- Open tech-spike questions (GDD §10/§12) must be surfaced with options, never silently decided: netcode transport (NGO+Relay vs Steam networking), VOIP solution (Vivox vs Dissonance vs Steam Voice).
+- **GDD v2.0 (investigation pivot, 2026-07):** deduction co-op — NPCs, shared clue board, entity rituals. Milestones M0–M9 in GDD §14. Build in order; every milestone stays playable.
+- Pre-pivot code carries forward: senses/noise + Wendigo FSM belong to v2's M6; the M2/M3 test scenes remain useful harnesses.
+- Open tech-spike questions (GDD §11/§13) must be surfaced with options, never silently decided. DECIDED with user: netcode+voice = Steam-native (NGO + embedded Facepunch transport + Steam Voice). STILL OPEN: dialogue authoring tool (Yarn Spinner vs Ink vs custom — decide at M3), NPC VO vs stylized non-verbal (decide early per GDD §10).
 
 ## Layout
 
