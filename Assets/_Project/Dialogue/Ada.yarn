@@ -1,0 +1,42 @@
+// Ada Bricker — farmer, pragmatic, honest-but-partial.
+// $name_holder decides per run who actually knows the Elias Cole story.
+
+title: Ada_Start
+---
+<<declare $name_holder = "tetch">>
+<<declare $has_claw_clue = false>>
+<<declare $ada_screams_told = false>>
+<<declare $ada_stock_told = false>>
+Ada: You the ones come about the trouble? Sit, then. Night ain't long enough for standing about.
+<<jump Ada_Hub>>
+===
+
+title: Ada_Hub
+---
+-> Ask about the screams. <<if not $ada_screams_told>>
+    Ada: Three nights running now. Comes down the valley after midnight, bounces wall to wall.
+    Ada: Weren't no panther. Panthers don't sound hungry like that.
+    <<set $ada_screams_told = true>>
+    <<testimony "Scream after midnight" "Three nights running, coming down the valley after midnight. 'Weren't no panther.'">>
+    <<jump Ada_Hub>>
+-> Ask about the livestock. <<if not $ada_stock_told>>
+    Ada: Boggs lost half his smokehouse Tuesday. Meat gone, door tore off top hinge downward.
+    Ada: Whatever did it went for the cured meat first. Mules weren't touched.
+    <<set $ada_stock_told = true>>
+    <<testimony "Smokehouse raided first" "Boggs' smokehouse emptied before any animal was harmed - it went for cured meat first.">>
+    <<jump Ada_Hub>>
+-> Show her the scored bark. <<if $has_claw_clue>>
+    Ada: Head height and higher, on the ash trees. So you've seen it too.
+    <<if $name_holder == "ada">>
+        Ada: My granny told it plain. Winter of '31, the food ran out on the ridge.
+        Ada: Come spring, one man walked down fat and smiling. Elias Cole never walked down at all.
+        <<testimony "The winter the food ran out" "Winter of '31: the ridge starved. One man came down fat in spring. Elias Cole was never found.">>
+    <<else>>
+        Ada: That story's not mine to tell. Old Man Tetch was up the ridge in '31.
+        Ada: Ask him about that winter. Show him the bark if he plays deaf.
+        <<testimony "Tetch was on the ridge in '31" "Ada says Old Man Tetch was there for the ridge winter. He'd know the name.">>
+    <<endif>>
+    <<jump Ada_Hub>>
+-> That's all for now.
+    Ada: Mind the tree line walking back. And walk soft on the gravel.
+===

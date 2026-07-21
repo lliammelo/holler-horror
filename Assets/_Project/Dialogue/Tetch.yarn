@@ -1,0 +1,33 @@
+// Old Man Tetch — withholding. Talks around the truth until shown proof.
+
+title: Tetch_Start
+---
+<<declare $tetch_opened_up = false>>
+Tetch: Don't get visitors past dark. Don't much want 'em neither.
+<<jump Tetch_Hub>>
+===
+
+title: Tetch_Hub
+---
+-> Ask what's preying on the holler.
+    Tetch: Coyotes, most like. Or Boggs' boys got careless with their own smokehouse.
+    Tetch: Old men sleep. We don't hear things.
+    <<jump Tetch_Hub>>
+-> Show him the scored bark. <<if $has_claw_clue and not $tetch_opened_up>>
+    Tetch: ...Where'd you find that. The ash line? Head height?
+    Tetch: Sit down. You didn't hear this from me.
+    <<set $tetch_opened_up = true>>
+    <<if $name_holder == "tetch">>
+        Tetch: Winter of '31 I was up the ridge with the timber crew. Snow come early and stayed.
+        Tetch: Food ran out in January. By March there was one man still walking, and he walked down FAT.
+        Tetch: His name was in the crew book same as mine. Elias Cole. And what came down wearing his coat weren't him no more.
+        <<testimony "Elias Cole came down changed" "Tetch, ridge crew of '31: the food ran out, and Elias Cole walked down fat in spring - 'weren't him no more.'">>
+    <<else>>
+        Tetch: I heard the stories same as everyone. But I weren't there - the Bricker family was.
+        Tetch: Ada's granny fed half the ridge that winter. Ask Ada what her granny saw.
+        <<testimony "The Brickers fed the ridge in '31" "Tetch says the Bricker family knew the ridge winter firsthand. Ada holds that story.">>
+    <<endif>>
+    <<jump Tetch_Hub>>
+-> Leave him be.
+    Tetch: Latch your doors. Not that it helps, if it's what I think it is.
+===

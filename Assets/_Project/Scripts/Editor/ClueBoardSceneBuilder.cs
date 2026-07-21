@@ -33,7 +33,7 @@ namespace HollerHorror.Editor
             Debug.Log($"[ClueBoardSceneBuilder] Built and saved {ScenePath}");
         }
 
-        private static void BuildBaseCampCorner()
+        internal static void BuildBaseCampCorner()
         {
             var root = new GameObject("BaseCamp").transform;
             var wood = new Material(Shader.Find("Universal Render Pipeline/Lit"))

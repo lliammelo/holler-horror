@@ -6,7 +6,8 @@
         "Unity.InputSystem",
         "Unity.Netcode.Runtime",
         "Facepunch Transport for Netcode for GameObjects",
-        "Unity.AI.Navigation"
+        "Unity.AI.Navigation",
+        "YarnSpinner.Unity"
     ],
     "includePlatforms": [
         "Editor"
