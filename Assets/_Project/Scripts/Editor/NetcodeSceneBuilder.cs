@@ -55,6 +55,9 @@ namespace HollerHorror.Editor
             sensesDebug.AddComponent<NoiseDebugRenderer>();
             sensesDebug.AddComponent<PlaceholderFootstepAudio>();
 
+            // Shared clue board (server-authoritative sync) near spawn.
+            ClueBoardSceneBuilder.BuildBoard(new Vector3(6f, 1.55f, -24f), networked: true);
+
             // Steam session glue + Fetch replay debugger.
             var sessionGo = new GameObject("SteamSession");
             var session = sessionGo.AddComponent<SteamSessionManager>();
@@ -97,6 +100,7 @@ namespace HollerHorror.Editor
             pivot.transform.localPosition = new Vector3(0, 1.66f, 0);
 
             var camRig = new GameObject("CameraRig");
+            camRig.tag = "MainCamera";
             camRig.transform.SetParent(pivot.transform);
             camRig.transform.localPosition = Vector3.zero;
             var cam = camRig.AddComponent<Camera>();
@@ -116,6 +120,8 @@ namespace HollerHorror.Editor
             controllerSo.ApplyModifiedPropertiesWithoutUndo();
 
             var emitter = player.AddComponent<HollerHorror.Senses.FootstepNoiseEmitter>();
+            var boardInteractor = player.AddComponent<HollerHorror.Clues.ClueBoardInteractor>();
+            var journal = player.AddComponent<HollerHorror.Clues.FieldJournal>();
 
             var hud = player.AddComponent<PlayerDebugHud>();
             var hudSo = new SerializedObject(hud);
@@ -134,8 +140,10 @@ namespace HollerHorror.Editor
             netPlayerSo.FindProperty("controller").objectReferenceValue = controller;
             netPlayerSo.FindProperty("cameraRig").objectReferenceValue = camRig;
             var ownerOnly = netPlayerSo.FindProperty("ownerOnlyBehaviours");
-            ownerOnly.arraySize = 1;
+            ownerOnly.arraySize = 3;
             ownerOnly.GetArrayElementAtIndex(0).objectReferenceValue = hud;
+            ownerOnly.GetArrayElementAtIndex(1).objectReferenceValue = boardInteractor;
+            ownerOnly.GetArrayElementAtIndex(2).objectReferenceValue = journal;
             netPlayerSo.ApplyModifiedPropertiesWithoutUndo();
 
             Directory.CreateDirectory(Path.GetDirectoryName(PrefabPath));
