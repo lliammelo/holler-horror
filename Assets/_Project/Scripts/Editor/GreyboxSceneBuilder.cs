@@ -55,7 +55,7 @@ namespace HollerHorror.Editor
             }
         }
 
-        private static void BuildLighting()
+        internal static void BuildLighting()
         {
             var lightGo = new GameObject("Directional Light (Dusk)");
             var light = lightGo.AddComponent<Light>();
@@ -72,6 +72,14 @@ namespace HollerHorror.Editor
             RenderSettings.fogMode = FogMode.ExponentialSquared;
             RenderSettings.fogColor = new Color(0.45f, 0.42f, 0.48f);
             RenderSettings.fogDensity = 0.015f;
+        }
+
+        internal static void BuildEnvironment()
+        {
+            BuildTerrain(
+                CreateMaterial("Greybox_Ground", new Color(0.30f, 0.32f, 0.30f)),
+                CreateMaterial("Greybox_Structure", new Color(0.55f, 0.55f, 0.58f)),
+                CreateMaterial("Greybox_Accent", new Color(0.65f, 0.45f, 0.30f)));
         }
 
         private static void BuildTerrain(Material ground, Material structure, Material accent)

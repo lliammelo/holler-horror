@@ -3,7 +3,9 @@
     "rootNamespace": "HollerHorror.Editor",
     "references": [
         "HollerHorror.Runtime",
-        "Unity.InputSystem"
+        "Unity.InputSystem",
+        "Unity.Netcode.Runtime",
+        "Facepunch Transport for Netcode for GameObjects"
     ],
     "includePlatforms": [
         "Editor"

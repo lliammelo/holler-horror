@@ -2,7 +2,9 @@
     "name": "HollerHorror.Runtime",
     "rootNamespace": "HollerHorror",
     "references": [
-        "Unity.InputSystem"
+        "Unity.InputSystem",
+        "Unity.Netcode.Runtime",
+        "Facepunch Transport for Netcode for GameObjects"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],
