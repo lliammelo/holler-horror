@@ -13,6 +13,8 @@ namespace HollerHorror.Debugging
         [SerializeField] private EntityPerception perception;
         [SerializeField] private Renderer body;
         [SerializeField] private float turnSpeed = 120f;
+        [SerializeField, Tooltip("Disable when something else (e.g. a NavMeshAgent) drives rotation.")]
+        private bool controlRotation = true;
 
         private MaterialPropertyBlock block;
         private static readonly int BaseColorId = Shader.PropertyToID("_BaseColor");
@@ -25,7 +27,8 @@ namespace HollerHorror.Debugging
                 return;
 
             TintByState();
-            FacePointOfInterest();
+            if (controlRotation)
+                FacePointOfInterest();
         }
 
         private void TintByState()

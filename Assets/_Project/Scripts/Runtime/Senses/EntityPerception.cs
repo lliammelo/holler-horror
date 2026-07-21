@@ -28,7 +28,7 @@ namespace HollerHorror.Senses
         [SerializeField, Range(10f, 360f)] private float visionFovDegrees = 120f;
         [SerializeField] private float eyeHeight = 1.7f;
         [SerializeField, Tooltip("Suspicion gained per second staring at a sprinting player at point-blank range.")]
-        private float visionGainPerSecond = 1.6f;
+        private float visionGainPerSecond = 1.1f;
         [SerializeField, Tooltip("How much harder a crouched player is to spot.")]
         private float crouchVisibilityMultiplier = 0.45f;
 
@@ -50,6 +50,16 @@ namespace HollerHorror.Senses
 
         /// <summary>Raised when a noise was actually heard (post-occlusion) by this entity.</summary>
         public event Action<NoiseEvent> Heard;
+
+        /// <summary>Hard-resets awareness (e.g. after the entity finishes with a downed player).</summary>
+        public void ResetSuspicion()
+        {
+            Suspicion = 0f;
+            State = AwarenessState.Unaware;
+            VisibleTarget = null;
+            LastHeardPosition = null;
+            lastStimulusTime = float.NegativeInfinity;
+        }
 
         private void OnEnable() => NoiseBus.OnNoise += HandleNoise;
         private void OnDisable() => NoiseBus.OnNoise -= HandleNoise;
@@ -97,6 +107,10 @@ namespace HollerHorror.Senses
 
             foreach (var player in PlayerRegistry.All)
             {
+                // Freshly-revived players get a short vision grace so they can creep away.
+                if (player.TryGetComponent(out Player.PlayerHealth health) && health.InReviveGrace)
+                    continue;
+
                 Vector3 head = player.Head != null ? player.Head.position : player.transform.position + Vector3.up * 1.6f;
                 Vector3 toPlayer = head - EyePosition;
                 float distance = toPlayer.magnitude;
