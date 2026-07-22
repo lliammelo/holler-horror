@@ -199,15 +199,25 @@ Painterly digital illustration, visible brushwork, muted limited palette, not ph
 
 The trial expires; the files don't. **This is the entire point of the exercise.**
 
-Download every keeper into `Docs/ArtBible/` named by prompt number:
+Download keepers into `Docs/ArtBible/` named after the subject, then commit them
+so they're backed up on GitHub. Current set:
 
-```
-01-basecamp-a.png
-02-homestead-c.png
-06-wendigo-b.png
-```
+| File | Prompt | Notes |
+|---|---|---|
+| `BaseCamp.png` | 1 | M9 target. The palette anchor everything else was keyed to. |
+| `HomeStead.png` | 2 | M9 target. |
+| `Chapel.png` | 3 | The Consecration site. |
+| `Creek.png` | 4 | Running water — the Fetch's hard barrier. |
+| `LaurelThickets.png` | 5 | Line-of-sight breakers for Wendigo chases. |
+| `Wendigo.png` | 6 | Backlit-through-fog staging = reusable lighting recipe. |
+| `TheFetch.png` | 7 | **Hero.** Two Ruths. The hook. |
+| `TheHollow.png` | 8 | The edge, never the void. |
+| `ClueBoard.png` | 9 | **Hero.** Sells the genre. Vertical — fits Steam's 600x900 library capsule. |
+| `MainMenu.png` | 10 | **Hero.** Title space reserved upper-left. |
 
-Then commit them to the repo so they're backed up on GitHub.
+**Missing:** the Ruth Combs portrait used to train the Soul ID character. If you
+still have it, keep it — it's the NPC face reference and the source for any
+future Fetch shot.
 
 ---
 
