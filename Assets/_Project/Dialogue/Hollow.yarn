@@ -1,0 +1,60 @@
+// The Hollow case. Signs: dead birdsong, cold spots, candle flames bent to no
+// wind, land that "moved." The oldest residents remember it waking before. The
+// chapel ledger holds the Consecration. Salt + lantern oil are the components.
+
+title: Granny_Start
+---
+<<declare $hollow_birds_told = false>>
+<<declare $hollow_moved_told = false>>
+<<declare $hollow_rite_given = false>>
+<<declare $hollow_salt_given = false>>
+Granny: You feel it too, don't you. The quiet with teeth in it. Sit close to the lamp, child.
+<<jump Granny_Hub>>
+===
+
+title: Granny_Hub
+---
+-> Ask what's wrong with the valley. <<if not $hollow_birds_told>>
+    Granny: The birds went first. Three mornings back, all at once, like a hand closed over them.
+    Granny: Then the cold come. Not weather-cold. The kind that sits in a room and watches.
+    <<set $hollow_birds_told = true>>
+    <<testimony "The birds stopped all at once" "Granny: birdsong ceased 'like a hand closed over them,' then a watching cold with no source.">>
+    <<jump Granny_Hub>>
+-> Ask if she's seen this before. <<if not $hollow_moved_told>>
+    Granny: Once. When I was small. The paths moved — the trail to the mine led somewhere it never had.
+    Granny: My mother called it the Hollow. The land gone empty and awake at once.
+    <<set $hollow_moved_told = true>>
+    <<testimony "The paths moved, once before" "Granny remembers the Hollow waking in her childhood: trails leading where they never had. 'The land gone empty and awake.'">>
+    <<jump Granny_Hub>>
+-> Ask how it was stopped. <<if $hollow_moved_told and not $hollow_rite_given>>
+    Granny: The chapel ledger holds the rite. Relight the altar and walk the salt-and-fire round the heart of it.
+    Granny: Here — the ledger's page. Don't let your candle gutter, or it's all for nothing.
+    <<set $hollow_rite_given = true>>
+    <<testimony "The Consecration, from the ledger" "Granny gives the chapel rite: relight the altar and walk a salt-and-fire boundary while the words are read.">>
+    <<jump Granny_Hub>>
+-> Ask for salt. <<if not $hollow_salt_given>>
+    Granny: Take the crock. Salt and fire — that's all that ever held the dark at bay.
+    <<set $hollow_salt_given = true>>
+    <<grant "salt">>
+    <<jump Granny_Hub>>
+-> Leave her be.
+    Granny: Keep to the light. It herds you toward the dark places if you let it.
+===
+
+// A second resident, plainer, corroborates the signs.
+
+title: HollowHarlan_Start
+---
+Harlan: My candles won't burn straight. Lean west, every one, and there's no draft to blame.
+<<jump HollowHarlan_Hub>>
+===
+
+title: HollowHarlan_Hub
+---
+-> Ask about the candles.
+    Harlan: Flames bend toward nothing. Toward the tree line. Toward wherever the quiet's thickest.
+    <<testimony "Candle flames bend to no wind" "Harlan's candles all lean west toward the tree line - no draft. Toward 'wherever the quiet's thickest.'">>
+    <<jump HollowHarlan_Hub>>
+-> Leave him be.
+    Harlan: If the lamp gutters, you run for fire. Don't think on it. Run.
+===

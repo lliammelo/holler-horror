@@ -21,6 +21,7 @@ namespace HollerHorror.Editor
         private const string ScenePath = "Assets/_Project/Scenes/Case_Test.unity";
         private const string HuntScenePath = "Assets/_Project/Scenes/CaseHunt_Test.unity";
         private const string FetchScenePath = "Assets/_Project/Scenes/FetchCase_Test.unity";
+        private const string HollowScenePath = "Assets/_Project/Scenes/HollowCase_Test.unity";
         private const string YarnProjectPath = "Assets/_Project/Dialogue/HollerHorror.yarnproject";
 
         [MenuItem("Holler Horror/Build Case Test Scene")]
@@ -31,6 +32,9 @@ namespace HollerHorror.Editor
 
         [MenuItem("Holler Horror/Build Fetch Case Test Scene")]
         public static void BuildFetchCase() => BuildFetchInternal(FetchScenePath);
+
+        [MenuItem("Holler Horror/Build Hollow Case Test Scene")]
+        public static void BuildHollowCase() => BuildHollowInternal(HollowScenePath);
 
         private static void BuildInternal(bool withHunt, string scenePath)
         {
@@ -68,6 +72,116 @@ namespace HollerHorror.Editor
             Directory.CreateDirectory(Path.GetDirectoryName(scenePath));
             EditorSceneManager.SaveScene(scene, scenePath);
             Debug.Log($"[CaseSceneBuilder] Built and saved {scenePath} (hunt={withHunt})");
+        }
+
+        // ---- The Hollow case (M8) ----
+
+        private static void BuildHollowInternal(string scenePath)
+        {
+            AssetDatabase.SaveAssets();
+            AssetDatabase.Refresh(ImportAssetOptions.ForceSynchronousImport);
+
+            var scene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
+
+            GreyboxSceneBuilder.BuildLighting();
+            GreyboxSceneBuilder.BuildEnvironment();
+            DarkenForHollow();
+            BuildBaseCamp();
+
+            var yarnProject = AssetDatabase.LoadAssetAtPath<YarnProject>(YarnProjectPath);
+            if (yarnProject == null)
+                throw new FileNotFoundException($"Yarn project not imported at {YarnProjectPath}.");
+
+            var dlgGo = DialogueSceneBuilder.BuildDialogueSystem(yarnProject);
+            var director = dlgGo.GetComponent<HollerHorror.Dialogue.CaseDirector>();
+            var dSo = new SerializedObject(director);
+            dSo.FindProperty("activeEntity").enumValueIndex = (int)HollerHorror.Clues.EntityId.Hollow;
+            dSo.ApplyModifiedPropertiesWithoutUndo();
+
+            // Residents (their homestead lanterns double as sanity refuges — until swallowed).
+            BuildHomestead("Granny Slone", "Granny_Start", new Vector3(-24f, 0f, 20f), new Color(0.5f, 0.45f, 0.4f));
+            BuildHomestead("Harlan Boggs", "HollowHarlan_Start", new Vector3(26f, 0f, 16f), new Color(0.4f, 0.42f, 0.3f));
+
+            // A chapel shell around the Consecration site (north).
+            BuildChapel(new Vector3(-8f, 0f, 34f));
+
+            BuildRitualLayer(); // crossroads/chapel sites + lantern_oil, mirror, ash_billet items
+
+            // Braziers: islands of fire to keep your head and hold the dark off.
+            Brazier(new Vector3(0f, 0f, -6f));
+            Brazier(new Vector3(-14f, 0f, 6f));
+            Brazier(new Vector3(14f, 0f, 4f));
+            Brazier(new Vector3(-6f, 0f, 26f)); // near the chapel approach
+
+            var hollowGo = new GameObject("Hollow");
+            var hollow = hollowGo.AddComponent<HollowController>();
+
+            var resolverGo = new GameObject("CaseResolver");
+            var resolver = resolverGo.AddComponent<CaseResolver>();
+            var rSo = new SerializedObject(resolver);
+            rSo.FindProperty("entityBehaviour").objectReferenceValue = hollow;
+            rSo.ApplyModifiedPropertiesWithoutUndo();
+
+            new GameObject("HallucinationDirector").AddComponent<HollerHorror.Clues.HallucinationDirector>();
+
+            var player = GreyboxSceneBuilder.BuildPlayer(new Vector3(0, 0.05f, -30f));
+            player.AddComponent<ClueBoardInteractor>();
+            player.AddComponent<FieldJournal>();
+            player.AddComponent<EntityJournal>();
+            player.AddComponent<HollerHorror.Player.PlayerSanity>();
+
+            Directory.CreateDirectory(Path.GetDirectoryName(scenePath));
+            EditorSceneManager.SaveScene(scene, scenePath);
+            Debug.Log($"[CaseSceneBuilder] Built and saved {scenePath} (Hollow case)");
+        }
+
+        private static void DarkenForHollow()
+        {
+            foreach (var light in Object.FindObjectsByType<Light>(FindObjectsInactive.Include))
+                if (light.type == LightType.Directional)
+                {
+                    light.color = new Color(0.32f, 0.34f, 0.5f);
+                    light.intensity = 0.18f; // thin cold moonlight — the dark matters now
+                }
+            RenderSettings.ambientSkyColor = new Color(0.10f, 0.10f, 0.16f);
+            RenderSettings.ambientEquatorColor = new Color(0.06f, 0.06f, 0.10f);
+            RenderSettings.ambientGroundColor = new Color(0.03f, 0.03f, 0.05f);
+            RenderSettings.fogColor = new Color(0.05f, 0.05f, 0.09f);
+            RenderSettings.fogDensity = 0.03f;
+        }
+
+        private static void Brazier(Vector3 position)
+        {
+            var root = new GameObject("Brazier");
+            root.transform.position = position;
+
+            var post = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
+            post.name = "Post";
+            post.transform.SetParent(root.transform);
+            post.transform.localPosition = new Vector3(0, 0.6f, 0);
+            post.transform.localScale = new Vector3(0.25f, 0.6f, 0.25f);
+            post.GetComponent<Renderer>().sharedMaterial =
+                new Material(Shader.Find("Universal Render Pipeline/Lit")) { color = new Color(0.15f, 0.12f, 0.1f) };
+
+            var flameGo = new GameObject("Flame");
+            flameGo.transform.SetParent(root.transform);
+            flameGo.transform.localPosition = new Vector3(0, 1.4f, 0);
+            var light = flameGo.AddComponent<Light>();
+            light.type = LightType.Point;
+            light.color = new Color(1f, 0.6f, 0.28f);
+            light.intensity = 2.4f;
+            light.range = 12f;
+        }
+
+        private static void BuildChapel(Vector3 position)
+        {
+            var root = new GameObject("Chapel").transform;
+            var stone = new Material(Shader.Find("Universal Render Pipeline/Lit"))
+            { color = new Color(0.30f, 0.30f, 0.33f) };
+            Box(root, "Chapel_BackWall", position + new Vector3(0, 2f, 3f), new Vector3(8, 4f, 0.4f), stone);
+            Box(root, "Chapel_WallL", position + new Vector3(-4f, 2f, 0), new Vector3(0.4f, 4f, 6f), stone);
+            Box(root, "Chapel_WallR", position + new Vector3(4f, 2f, 0), new Vector3(0.4f, 4f, 6f), stone);
+            Box(root, "Chapel_Altar", position + new Vector3(0, 0.5f, 2f), new Vector3(1.6f, 1f, 0.8f), stone);
         }
 
         // ---- The Fetch case (M7) ----

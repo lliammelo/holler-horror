@@ -25,9 +25,13 @@ namespace HollerHorror.Dialogue
         public string NpcName { get => npcName; set => npcName = value; }
         public string StartNode { get => startNode; set => startNode = value; }
         public bool IsAlive { get; private set; } = true;
+        /// <summary>True while a Hollow zone has swallowed this resident — unreachable until it passes.</summary>
+        public bool IsEnveloped { get; private set; }
 
         /// <summary>Raised when this resident is killed — clue/component holders can react.</summary>
         public event Action<NpcController> Died;
+
+        public void SetEnveloped(bool enveloped) => IsEnveloped = enveloped;
 
         private void OnEnable() => NpcRegistry.Register(this);
         private void OnDisable() => NpcRegistry.Unregister(this);
@@ -70,7 +74,7 @@ namespace HollerHorror.Dialogue
 
         private void Update()
         {
-            if (!IsAlive || DialogueService.Instance == null || DialogueService.Instance.IsBusy)
+            if (!IsAlive || IsEnveloped || DialogueService.Instance == null || DialogueService.Instance.IsBusy)
                 return;
 
             if (LocalPlayerNear() && Keyboard.current != null && Keyboard.current.eKey.wasPressedThisFrame)
@@ -82,8 +86,10 @@ namespace HollerHorror.Dialogue
             if (!IsAlive || DialogueService.Instance == null || DialogueService.Instance.IsBusy || !LocalPlayerNear())
                 return;
 
-            GUILayout.BeginArea(new Rect(Screen.width / 2f - 100, Screen.height * 0.62f, 200, 30), GUI.skin.box);
-            GUILayout.Label($"[E] Talk to {npcName}");
+            GUILayout.BeginArea(new Rect(Screen.width / 2f - 130, Screen.height * 0.62f, 260, 30), GUI.skin.box);
+            GUILayout.Label(IsEnveloped
+                ? $"{npcName} is somewhere in the dark — you can't reach them"
+                : $"[E] Talk to {npcName}");
             GUILayout.EndArea();
         }
     }
