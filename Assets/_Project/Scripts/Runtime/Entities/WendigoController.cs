@@ -23,7 +23,7 @@ namespace HollerHorror.Entities
     /// </summary>
     [RequireComponent(typeof(NavMeshAgent))]
     [RequireComponent(typeof(EntityPerception))]
-    public sealed class WendigoController : MonoBehaviour
+    public sealed class WendigoController : MonoBehaviour, IBanishable
     {
         [Header("Speeds (player sprints at 6.2)")]
         [SerializeField] private float patrolSpeed = 2.2f;

@@ -55,7 +55,7 @@ namespace HollerHorror.Editor
             Debug.Log($"[DialogueSceneBuilder] Built and saved {ScenePath} — wired Yarn project '{yarnProjectName}'");
         }
 
-        internal static void BuildDialogueSystem(YarnProject yarnProject)
+        internal static GameObject BuildDialogueSystem(YarnProject yarnProject)
         {
             var go = new GameObject("DialogueSystem");
             var runner = go.AddComponent<DialogueRunner>();
@@ -75,6 +75,7 @@ namespace HollerHorror.Editor
             presenters.arraySize = 1;
             presenters.GetArrayElementAtIndex(0).objectReferenceValue = hud;
             so.ApplyModifiedPropertiesWithoutUndo();
+            return go;
         }
 
         internal static void BuildNpc(string npcName, string startNode, Vector3 position, Color tint)

@@ -1,0 +1,78 @@
+// The Fetch case. The deduction: one "Ruth" is not Ruth. The false one sits
+// across the creek (running water it cannot cross) and tries to send you to
+// the Wendigo's ritual — which would backfire. Catch the contradiction.
+
+title: RuthReal_Start
+---
+<<declare $fetch_denies_told = false>>
+<<declare $fetch_double_told = false>>
+<<declare $fetch_salt_given = false>>
+Ruth: Don't— oh. It's really you this time. I can tell now. I think I can tell.
+<<jump RuthReal_Hub>>
+===
+
+title: RuthReal_Hub
+---
+-> Ask why she said "this time." <<if not $fetch_denies_told>>
+    Ruth: Someone came to my door this morning wearing your walk. Talked to me kind. I told them things.
+    Ruth: Then you come now and you don't remember a word of it. So one of you isn't you.
+    <<set $fetch_denies_told = true>>
+    <<testimony "A conversation I never had" "Ruth swears she confided in one of us this morning - but none of us spoke to her. Someone wore our face.">>
+    <<jump RuthReal_Hub>>
+-> Ask what she's seen. <<if not $fetch_double_told>>
+    Ruth: I saw myself. Down by the creek at dusk, standing in the shallows, looking back up at me.
+    Ruth: My granny always said the running water's the one thing it won't cross. Keep the creek at your back.
+    <<set $fetch_double_told = true>>
+    <<testimony "Ruth saw her own double" "Ruth watched 'herself' standing in the creek at dusk. She says running water is the one thing it won't cross.">>
+    <<jump RuthReal_Hub>>
+-> Ask if she can spare salt. <<if not $fetch_salt_given>>
+    Ruth: For the binding? Here — the whole sack. Ring the glass with it and don't break the circle.
+    <<set $fetch_salt_given = true>>
+    <<grant "salt">>
+    <<jump RuthReal_Hub>>
+-> Leave her be.
+    Ruth: Keep the creek between you and it. Promise me.
+===
+
+// ---- The false Ruth, across the creek ----
+
+title: RuthFetch_Start
+---
+Ruth: There you are. We spoke this morning, don't you remember? You promised you'd help me.
+<<jump RuthFetch_Hub>>
+===
+
+title: RuthFetch_Hub
+---
+-> "We spoke this morning?"
+    Ruth: Of course we did. On your mother's grave we did. Why would I lie?
+    Ruth: It's the old hunger come back — the Wendigo, same winter as '31. Here, I wrote the name for you: Elias Cole. Burn it at the kill site. Tonight. Hurry.
+    <<testimony "Ruth (creek): it's the Wendigo" "'Ruth,' met across the creek, insists we spoke this morning and that the answer is the Wendigo - burn the name, tonight. She handed the name over eagerly.">>
+    <<grant "the_name">>
+    <<jump RuthFetch_Hub>>
+-> "Ruth is at her house. Who are you?"
+    Ruth: I am Ruth. She is the lie. Cross the water and I'll prove it to you.
+    Ruth: ...Come across. Come across the water. Why won't you come across?
+    <<jump RuthFetch_Hub>>
+-> Say nothing and back away.
+    Ruth: Don't go. DON'T— ...we spoke this morning. You promised.
+===
+
+// ---- Ada corroborates the duplicate ----
+
+title: AdaFetch_Start
+---
+Ada: You look like you've seen a haint. Sit.
+<<jump AdaFetch_Hub>>
+===
+
+title: AdaFetch_Hub
+---
+-> Ask about Ruth.
+    Ada: Ruth? Saw her twice at once yesterday. Up at her place hanging wash, and down at the creek, same breath.
+    Ada: One of them weren't Ruth. You mark which side of the water it kept to.
+    <<testimony "Ada saw two Ruths at once" "Ada saw Ruth in two places at the same moment - her homestead and the creek. One kept to the far bank.">>
+    <<jump AdaFetch_Hub>>
+-> Leave her be.
+    Ada: Trust the water, not the face.
+===

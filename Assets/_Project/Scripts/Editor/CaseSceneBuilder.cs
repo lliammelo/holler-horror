@@ -20,6 +20,7 @@ namespace HollerHorror.Editor
     {
         private const string ScenePath = "Assets/_Project/Scenes/Case_Test.unity";
         private const string HuntScenePath = "Assets/_Project/Scenes/CaseHunt_Test.unity";
+        private const string FetchScenePath = "Assets/_Project/Scenes/FetchCase_Test.unity";
         private const string YarnProjectPath = "Assets/_Project/Dialogue/HollerHorror.yarnproject";
 
         [MenuItem("Holler Horror/Build Case Test Scene")]
@@ -27,6 +28,9 @@ namespace HollerHorror.Editor
 
         [MenuItem("Holler Horror/Build Case (Night Hunt) Test Scene")]
         public static void BuildHunt() => BuildInternal(withHunt: true, HuntScenePath);
+
+        [MenuItem("Holler Horror/Build Fetch Case Test Scene")]
+        public static void BuildFetchCase() => BuildFetchInternal(FetchScenePath);
 
         private static void BuildInternal(bool withHunt, string scenePath)
         {
@@ -55,6 +59,7 @@ namespace HollerHorror.Editor
             var player = GreyboxSceneBuilder.BuildPlayer(new Vector3(0, 0.05f, -28f));
             player.AddComponent<ClueBoardInteractor>();
             player.AddComponent<FieldJournal>();
+            player.AddComponent<EntityJournal>();
             player.AddComponent<HollerHorror.Player.PlayerHealth>(); // BuildPlayer already adds the noise emitter
 
             if (withHunt)
@@ -65,12 +70,147 @@ namespace HollerHorror.Editor
             Debug.Log($"[CaseSceneBuilder] Built and saved {scenePath} (hunt={withHunt})");
         }
 
+        // ---- The Fetch case (M7) ----
+
+        private static void BuildFetchInternal(string scenePath)
+        {
+            AssetDatabase.SaveAssets();
+            AssetDatabase.Refresh(ImportAssetOptions.ForceSynchronousImport);
+
+            var scene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
+
+            GreyboxSceneBuilder.BuildLighting();
+            GreyboxSceneBuilder.BuildEnvironment();
+            BuildBaseCamp();
+
+            var yarnProject = AssetDatabase.LoadAssetAtPath<YarnProject>(YarnProjectPath);
+            if (yarnProject == null)
+                throw new FileNotFoundException($"Yarn project not imported at {YarnProjectPath}.");
+
+            var dlgGo = DialogueSceneBuilder.BuildDialogueSystem(yarnProject);
+            var director = dlgGo.GetComponent<HollerHorror.Dialogue.CaseDirector>();
+            var dSo = new SerializedObject(director);
+            dSo.FindProperty("activeEntity").enumValueIndex = (int)HollerHorror.Clues.EntityId.Fetch;
+            dSo.ApplyModifiedPropertiesWithoutUndo();
+
+            // The creek: running water dividing the camp/residents (south) from the double (north).
+            BuildCreek(8f);
+
+            // Real residents, south of the water.
+            BuildHomestead("Ruth Combs", "RuthReal_Start", new Vector3(-22f, 0f, -14f), new Color(0.45f, 0.45f, 0.30f));
+            BuildHomestead("Ada Bricker", "AdaFetch_Start", new Vector3(24f, 0f, -12f), new Color(0.55f, 0.35f, 0.30f));
+
+            // The Fetch wearing Ruth's face — stranded across the creek, unable to cross back.
+            DialogueSceneBuilder.BuildNpc("Ruth Combs", "RuthFetch_Start", new Vector3(-6f, 0.12f, 26f), new Color(0.45f, 0.45f, 0.30f));
+
+            BuildFetchEvidence();
+
+            // Rituals: crossroads (Mirror Binding — correct) + chapel + a standalone
+            // first-kill site so the double's Wendigo lie can actually be (wrongly) acted on.
+            BuildRitualLayer();
+            SiteMarker(new GameObject("FirstKillSite_Fetch").transform, new Vector3(14f, 0f, -26f),
+                new Color(0.6f, 0.2f, 0.15f)).Kind = HollerHorror.Rituals.RitualSiteKind.FirstKillSite;
+
+            var fetch = BuildFetchEntity(new Vector3(2f, 0f, 30f));
+
+            var navGo = new GameObject("NavMesh");
+            var surface = navGo.AddComponent<NavMeshSurface>();
+            surface.collectObjects = CollectObjects.All;
+            surface.useGeometry = UnityEngine.AI.NavMeshCollectGeometry.PhysicsColliders; // skip TextMesh render meshes
+            navGo.AddComponent<NavMeshBootstrap>();
+
+            var resolverGo = new GameObject("CaseResolver");
+            var resolver = resolverGo.AddComponent<CaseResolver>();
+            var rSo = new SerializedObject(resolver);
+            rSo.FindProperty("entityBehaviour").objectReferenceValue = fetch;
+            rSo.ApplyModifiedPropertiesWithoutUndo();
+
+            var player = GreyboxSceneBuilder.BuildPlayer(new Vector3(0, 0.05f, -30f));
+            player.AddComponent<ClueBoardInteractor>();
+            player.AddComponent<FieldJournal>();
+            player.AddComponent<EntityJournal>();
+
+            Directory.CreateDirectory(Path.GetDirectoryName(scenePath));
+            EditorSceneManager.SaveScene(scene, scenePath);
+            Debug.Log($"[CaseSceneBuilder] Built and saved {scenePath} (Fetch case)");
+        }
+
+        private static void BuildCreek(float z)
+        {
+            var creek = new GameObject("Creek");
+            creek.transform.position = new Vector3(0f, 0.05f, z);
+
+            // Trigger volume the Fetch won't cross (players wade through freely).
+            var box = creek.AddComponent<BoxCollider>();
+            box.isTrigger = true;
+            box.size = new Vector3(80f, 2f, 5f);
+            creek.AddComponent<RunningWater>();
+
+            // Visual band.
+            var visual = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            visual.name = "CreekWater";
+            Object.DestroyImmediate(visual.GetComponent<Collider>());
+            visual.transform.SetParent(creek.transform, false);
+            visual.transform.localScale = new Vector3(80f, 0.05f, 4.5f);
+            visual.GetComponent<Renderer>().sharedMaterial =
+                new Material(Shader.Find("Universal Render Pipeline/Lit")) { color = new Color(0.2f, 0.35f, 0.5f) };
+        }
+
+        private static void BuildFetchEvidence()
+        {
+            var root = new GameObject("FetchEvidence").transform;
+
+            EvidenceProp(root, new Vector3(-20f, 0, -10f), new Color(0.7f, 0.72f, 0.75f),
+                "Fogged mirror", "Ruth's hall mirror will not wipe clear. The glass holds a grey breath that isn't yours.", "Ruth's house");
+            EvidenceProp(root, new Vector3(-8f, 0, 4f), new Color(0.4f, 0.35f, 0.3f),
+                "Duplicate footprints", "Two identical sets of prints leave the creek mud - same boot, same stride. One set walks INTO the water and stops.", "the creek bank");
+            EvidenceProp(root, new Vector3(10f, 0, 2f), new Color(0.3f, 0.4f, 0.48f),
+                "Still water, no reflection", "The shallows lie dead flat. You lean over and nothing leans back.", "the creek");
+        }
+
+        private static FetchController BuildFetchEntity(Vector3 position)
+        {
+            var fetch = new GameObject("Fetch");
+            fetch.transform.position = position;
+
+            var body = GameObject.CreatePrimitive(PrimitiveType.Capsule);
+            body.name = "Disguise";
+            Object.DestroyImmediate(body.GetComponent<Collider>());
+            body.transform.SetParent(fetch.transform);
+            body.transform.localPosition = new Vector3(0, 1f, 0);
+            body.GetComponent<Renderer>().sharedMaterial =
+                new Material(Shader.Find("Universal Render Pipeline/Lit")) { color = new Color(0.6f, 0.6f, 0.62f) };
+
+            var nameTagGo = new GameObject("NameTag");
+            nameTagGo.transform.SetParent(fetch.transform);
+            nameTagGo.transform.localPosition = new Vector3(0, 2.3f, 0);
+            var nameTag = nameTagGo.AddComponent<TextMesh>();
+            nameTag.characterSize = 0.2f;
+            nameTag.fontSize = 32;
+            nameTag.anchor = TextAnchor.MiddleCenter;
+            nameTag.color = new Color(0.85f, 0.85f, 0.9f);
+
+            var agent = fetch.AddComponent<UnityEngine.AI.NavMeshAgent>();
+            agent.height = 2f;
+            agent.radius = 0.4f;
+            agent.angularSpeed = 200f;
+
+            var controller = fetch.AddComponent<FetchController>();
+            var so = new SerializedObject(controller);
+            so.FindProperty("bodyRenderer").objectReferenceValue = body.GetComponent<Renderer>();
+            so.FindProperty("disguiseVisual").objectReferenceValue = body;
+            so.FindProperty("nameTag").objectReferenceValue = nameTag;
+            so.ApplyModifiedPropertiesWithoutUndo();
+            return controller;
+        }
+
         private static void BuildHuntLayer()
         {
             // NavMesh over the whole holler, baked at runtime.
             var navGo = new GameObject("NavMesh");
             var surface = navGo.AddComponent<NavMeshSurface>();
             surface.collectObjects = CollectObjects.All;
+            surface.useGeometry = UnityEngine.AI.NavMeshCollectGeometry.PhysicsColliders; // skip TextMesh render meshes
             navGo.AddComponent<NavMeshBootstrap>();
 
             // The night clock.
