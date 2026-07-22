@@ -28,6 +28,14 @@ namespace HollerHorror.Clues
             float width = 420f;
             GUILayout.BeginArea(new Rect(Screen.width - width - 10, 10, width, Screen.height * 0.75f), GUI.skin.box);
             GUILayout.Label($"FIELD JOURNAL — {state.Cards.Count} clue(s)   [J] close");
+
+            if (Rituals.RitualInventory.Items.Count > 0)
+            {
+                string carried = "";
+                foreach (var item in Rituals.RitualInventory.Items)
+                    carried += (carried.Length > 0 ? ", " : "") + Rituals.RitualDefinition.ItemDisplayName(item);
+                GUILayout.Label($"Carried: {carried}");
+            }
             scroll = GUILayout.BeginScrollView(scroll);
 
             foreach (var card in state.Cards.Values)

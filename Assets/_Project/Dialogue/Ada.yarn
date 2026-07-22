@@ -30,7 +30,9 @@ title: Ada_Hub
     <<if $name_holder == "ada">>
         Ada: My granny told it plain. Winter of '31, the food ran out on the ridge.
         Ada: Come spring, one man walked down fat and smiling. Elias Cole never walked down at all.
+        Ada: Write the name down. E-L-I-A-S. Cole. If it's what took him wearing him, you'll need it.
         <<testimony "The winter the food ran out" "Winter of '31: the ridge starved. One man came down fat in spring. Elias Cole was never found.">>
+        <<grant "the_name">>
     <<else>>
         Ada: That story's not mine to tell. Old Man Tetch was up the ridge in '31.
         Ada: Ask him about that winter. Show him the bark if he plays deaf.

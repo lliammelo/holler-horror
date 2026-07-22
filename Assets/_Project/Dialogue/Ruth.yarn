@@ -8,6 +8,7 @@ title: Ruth_Start
 <<declare $ruth_cold_told = false>>
 <<declare $ruth_birds_told = false>>
 <<declare $ruth_pressed = false>>
+<<declare $ruth_salt_given = false>>
 Ruth: Keep your voices low. It hears the valley. I'd swear on the book it does.
 <<jump Ruth_Hub>>
 ===
@@ -32,6 +33,12 @@ title: Ruth_Hub
     Ruth: But the birds, stranger. I'll stand on the birds.
     <<set $ruth_pressed = true>>
     <<testimony "Ruth concedes the springhouse" "Shown the spring channel, Ruth allows the cold is 'maybe' just the spring. The quiet birds she stands by.">>
+    <<jump Ruth_Hub>>
+-> Ask if she can spare salt. <<if not $ruth_salt_given>>
+    Ruth: Salt? Now you're talking sense. First sensible thing anyone's asked all week.
+    Ruth: Take the whole sack. Line your doors, your windows, and anything you love.
+    <<set $ruth_salt_given = true>>
+    <<grant "salt">>
     <<jump Ruth_Hub>>
 -> Leave her be.
     Ruth: Salt your doorway tonight. Can't hurt, can it.

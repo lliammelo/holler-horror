@@ -21,7 +21,9 @@ title: Tetch_Hub
         Tetch: Winter of '31 I was up the ridge with the timber crew. Snow come early and stayed.
         Tetch: Food ran out in January. By March there was one man still walking, and he walked down FAT.
         Tetch: His name was in the crew book same as mine. Elias Cole. And what came down wearing his coat weren't him no more.
+        Tetch: Take the name. Write it careful. Burning a name only works if you burn the RIGHT one.
         <<testimony "Elias Cole came down changed" "Tetch, ridge crew of '31: the food ran out, and Elias Cole walked down fat in spring - 'weren't him no more.'">>
+        <<grant "the_name">>
     <<else>>
         Tetch: I heard the stories same as everyone. But I weren't there - the Bricker family was.
         Tetch: Ada's granny fed half the ridge that winter. Ask Ada what her granny saw.

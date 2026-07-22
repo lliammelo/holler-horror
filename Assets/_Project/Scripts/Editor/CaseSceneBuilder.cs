@@ -41,6 +41,7 @@ namespace HollerHorror.Editor
             BuildHomestead("Ruth Combs", "Ruth_Start", new Vector3(22f, 0f, -20f), new Color(0.45f, 0.45f, 0.30f));
 
             BuildEvidenceSet();
+            BuildRitualLayer();
 
             var player = GreyboxSceneBuilder.BuildPlayer(new Vector3(0, 0.05f, -28f));
             player.AddComponent<ClueBoardInteractor>();
@@ -98,13 +99,16 @@ namespace HollerHorror.Editor
         {
             var root = new GameObject("Evidence").transform;
 
-            // Wendigo-supporting evidence — carcass location varies per run.
-            var carcassA = EvidenceProp(root, new Vector3(-24f, 0, 18f), new Color(0.5f, 0.25f, 0.2f),
+            // Wendigo-supporting evidence — carcass location varies per run. Each
+            // spot bundles the carcass AND its first-kill ritual site as siblings,
+            // so collecting the carcass (which destroys the prop) leaves the site
+            // standing, and the per-run toggle hides the unused pair entirely.
+            var spotA = BuildFirstKillSpot(root, new Vector3(-24f, 0, 18f),
                 "Stripped carcass", "A hog taken apart to clean bone behind the smokehouse. Nothing wasted, nothing dragged off.", "behind Ada's smokehouse");
-            var carcassB = EvidenceProp(root, new Vector3(8f, 0, 32f), new Color(0.5f, 0.25f, 0.2f),
+            var spotB = BuildFirstKillSpot(root, new Vector3(8f, 0, 32f),
                 "Stripped carcass", "A deer stripped to clean bone beside the ridge trail. No scavenger sign - nothing else will touch it.", "the ridge trail");
             var layout = root.gameObject.AddComponent<AlternativeEvidenceSpots>();
-            layout.Alternatives = new[] { carcassA, carcassB };
+            layout.Alternatives = new[] { spotA, spotB };
 
             EvidenceProp(root, new Vector3(0f, 0, 10f), new Color(0.35f, 0.28f, 0.18f),
                 "Claw-scored bark", "Ash trees scored to bare wood, head height and higher. Whatever reaches that high walks upright.", "the ash line");
@@ -119,6 +123,85 @@ namespace HollerHorror.Editor
             // Negative evidence: actively rules out the Fetch.
             EvidenceProp(root, new Vector3(-15f, 0, -24f), new Color(0.25f, 0.35f, 0.45f),
                 "The clear pool", "Still water by the creek, clear as glass, and the hand mirror left on the stone shows true. Nothing here fears its own face.", "the creek pool");
+        }
+
+        /// <summary>One first-kill spot: carcass evidence + its ritual site as siblings in a toggleable container.</summary>
+        private static GameObject BuildFirstKillSpot(Transform root, Vector3 position,
+            string title, string body, string foundAt)
+        {
+            var container = new GameObject("FirstKillSpot");
+            container.transform.SetParent(root);
+            container.transform.position = position;
+
+            EvidenceProp(container.transform, position, new Color(0.5f, 0.25f, 0.2f), title, body, foundAt);
+
+            var site = SiteMarker(container.transform, position + new Vector3(1.6f, 0, 1.6f),
+                new Color(0.6f, 0.2f, 0.15f));
+            site.Kind = HollerHorror.Rituals.RitualSiteKind.FirstKillSite;
+
+            return container;
+        }
+
+        /// <summary>Standalone ritual sites + component pickups (M5).</summary>
+        private static void BuildRitualLayer()
+        {
+            var root = new GameObject("Rituals").transform;
+
+            // Crossroads (Fetch) and chapel stone (Hollow).
+            SiteMarker(root, new Vector3(0f, 0f, 0f), new Color(0.12f, 0.45f, 0.42f))
+                .Kind = HollerHorror.Rituals.RitualSiteKind.Crossroads;
+            SiteMarker(root, new Vector3(-8f, 0f, 34f), new Color(0.35f, 0.22f, 0.5f))
+                .Kind = HollerHorror.Rituals.RitualSiteKind.ChapelStone;
+
+            // Component pickups.
+            ItemProp(root, new Vector3(2f, 0, 8f), new Color(0.7f, 0.65f, 0.5f), "ash_billet");
+            ItemProp(root, new Vector3(-11.5f, 0, -20.5f), new Color(0.7f, 0.75f, 0.8f), "mirror");
+            ItemProp(root, new Vector3(24.5f, 0, 21f), new Color(0.55f, 0.5f, 0.3f), "lantern_oil");
+            // salt comes from Ruth; the name comes from whoever holds the story.
+        }
+
+        private static HollerHorror.Rituals.RitualSite SiteMarker(Transform parent, Vector3 position, Color color)
+        {
+            var marker = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
+            marker.name = "RitualSite";
+            marker.transform.SetParent(parent);
+            marker.transform.position = position + Vector3.up * 0.1f;
+            marker.transform.localScale = new Vector3(2.2f, 0.1f, 2.2f);
+            Object.DestroyImmediate(marker.GetComponent<Collider>()); // walk-over disc, no collision
+
+            var mat = new Material(Shader.Find("Universal Render Pipeline/Lit")) { color = color };
+            EnableEmission(mat, color); // glows so it reads at distance in the fog
+            marker.GetComponent<Renderer>().sharedMaterial = mat;
+
+            // Vertical beacon so the site is findable across the greybox valley.
+            var beacon = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
+            beacon.name = "Beacon";
+            Object.DestroyImmediate(beacon.GetComponent<Collider>());
+            beacon.transform.SetParent(marker.transform, false);
+            beacon.transform.localScale = new Vector3(0.06f, 40f, 0.06f); // tall thin shaft
+            beacon.transform.localPosition = new Vector3(0f, 40f, 0f);
+            beacon.GetComponent<Renderer>().sharedMaterial = mat;
+
+            return marker.AddComponent<HollerHorror.Rituals.RitualSite>();
+        }
+
+        private static void EnableEmission(Material mat, Color color)
+        {
+            mat.EnableKeyword("_EMISSION");
+            mat.globalIlluminationFlags = MaterialGlobalIlluminationFlags.RealtimeEmissive;
+            mat.SetColor("_EmissionColor", color * 1.6f);
+        }
+
+        private static void ItemProp(Transform root, Vector3 position, Color color, string itemId)
+        {
+            var prop = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            prop.name = $"Item_{itemId}";
+            prop.transform.SetParent(root);
+            prop.transform.position = position + Vector3.up * 0.3f;
+            prop.transform.localScale = Vector3.one * 0.45f;
+            prop.GetComponent<Renderer>().sharedMaterial =
+                new Material(Shader.Find("Universal Render Pipeline/Lit")) { color = color };
+            prop.AddComponent<HollerHorror.Rituals.ItemPickup>().Configure(itemId);
         }
 
         private static GameObject EvidenceProp(Transform root, Vector3 position, Color color,

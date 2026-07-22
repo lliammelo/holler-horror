@@ -27,7 +27,6 @@ namespace HollerHorror.Clues
         private ClueCardView stringFromCard;
         private ClueCardView hoveredCard;
         private LineRenderer stringPreview;
-        private EntityId pendingDeclaration = EntityId.Unknown;
 
         private void Awake()
         {
@@ -223,38 +222,39 @@ namespace HollerHorror.Clues
             }
         }
 
-        /// <summary>The M4 commitment moment: declare the entity at the board. One shot.</summary>
+        /// <summary>
+        /// Ritual preparation (M5): choose which entity's rite to gather for.
+        /// Changeable here — the real commitment is speaking the words at the site.
+        /// </summary>
         private void DrawDeclarationPanel()
         {
             var director = Dialogue.CaseDirector.Instance;
-            if (director == null)
+            if (director == null || director.CaseWon)
                 return;
 
-            GUILayout.BeginArea(new Rect(Screen.width - 260, 10, 250, 190), GUI.skin.box);
+            GUILayout.BeginArea(new Rect(Screen.width - 290, 10, 280, 240), GUI.skin.box);
 
-            if (director.HasDeclared)
+            if (director.PreparedRitual == EntityId.Unknown)
             {
-                GUILayout.Label(director.DeclaredCorrectly
-                    ? $"You named it: {director.DeclaredEntity}.\n\nThe evidence held. Dawn will come.\n(M5: the banishing ritual goes here.)"
-                    : $"You named {director.DeclaredEntity}.\n\nThe holler knows you guessed wrong.\n(M5: this is where the backfire hits.)");
-            }
-            else if (pendingDeclaration == EntityId.Unknown)
-            {
-                GUILayout.Label("COMMIT — what preys on this holler?");
-                if (GUILayout.Button("The Wendigo")) pendingDeclaration = EntityId.Wendigo;
-                if (GUILayout.Button("The Fetch")) pendingDeclaration = EntityId.Fetch;
-                if (GUILayout.Button("The Hollow")) pendingDeclaration = EntityId.Hollow;
+                GUILayout.Label("PREPARE A RITUAL — what preys on this holler?");
+                if (GUILayout.Button("The Wendigo — Burning of the Name")) director.PrepareRitual(EntityId.Wendigo);
+                if (GUILayout.Button("The Fetch — Mirror Binding")) director.PrepareRitual(EntityId.Fetch);
+                if (GUILayout.Button("The Hollow — Consecration")) director.PrepareRitual(EntityId.Hollow);
             }
             else
             {
-                GUILayout.Label($"Declare {pendingDeclaration}?\nThere is no taking it back.");
-                if (GUILayout.Button("Commit"))
+                var ritual = director.PreparedRitual;
+                GUILayout.Label($"Preparing: {Rituals.RitualDefinition.DisplayName(ritual)}");
+                GUILayout.Label($"Perform at {Rituals.RitualDefinition.SiteDescription(ritual)}.");
+                GUILayout.Label("Components:");
+                foreach (var item in Rituals.RitualDefinition.ComponentsOf(ritual))
                 {
-                    director.Declare(pendingDeclaration);
-                    pendingDeclaration = EntityId.Unknown;
+                    bool has = Rituals.RitualInventory.Has(item);
+                    GUILayout.Label($"  {(has ? "✔" : "✘")} {Rituals.RitualDefinition.ItemDisplayName(item)}");
                 }
-                if (GUILayout.Button("Not yet"))
-                    pendingDeclaration = EntityId.Unknown;
+                GUILayout.Space(6);
+                if (GUILayout.Button("Reconsider (prepare a different rite)"))
+                    director.PrepareRitual(EntityId.Unknown);
             }
 
             GUILayout.EndArea();

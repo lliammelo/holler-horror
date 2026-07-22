@@ -32,6 +32,7 @@ namespace HollerHorror.Dialogue
             if (runner.YarnProject == null && yarnProject != null)
                 runner.SetProject(yarnProject);
             runner.AddCommandHandler<string, string>("testimony", PinTestimony);
+            runner.AddCommandHandler<string>("grant", GrantItem);
         }
 
         private void OnDestroy()
@@ -71,6 +72,12 @@ namespace HollerHorror.Dialogue
                     return true;
             }
             return false;
+        }
+
+        private void GrantItem(string itemId)
+        {
+            Rituals.RitualInventory.Grant(itemId);
+            Debug.Log($"[Dialogue] {CurrentNpcName} gave us: {Rituals.RitualDefinition.ItemDisplayName(itemId)}");
         }
 
         private void PinTestimony(string title, string body)
