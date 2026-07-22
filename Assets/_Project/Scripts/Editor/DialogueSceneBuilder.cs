@@ -103,6 +103,10 @@ namespace HollerHorror.Editor
             var controller = npc.AddComponent<NpcController>();
             controller.NpcName = npcName;
             controller.StartNode = startNode;
+
+            var controllerSo = new SerializedObject(controller);
+            controllerSo.FindProperty("bodyRenderer").objectReferenceValue = body.GetComponent<Renderer>();
+            controllerSo.ApplyModifiedPropertiesWithoutUndo();
         }
 
         private static void BuildEvidenceProp(Vector3 position)

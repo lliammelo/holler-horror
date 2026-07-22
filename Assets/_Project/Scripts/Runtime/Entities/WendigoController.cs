@@ -5,7 +5,15 @@ using UnityEngine.AI;
 
 namespace HollerHorror.Entities
 {
-    public enum WendigoState { Patrol, Investigate, Chase, Search, Feeding }
+    public enum WendigoState { Patrol, Investigate, Chase, Search, Feeding, StalkNpc }
+
+    /// <summary>How bold the Wendigo is, driven by the night clock (GDD §3 escalation).</summary>
+    public enum AggressionTier
+    {
+        Passive = 0,   // dusk/early: signs and stalking only — investigates but won't chase
+        HuntPlayers = 1, // mid: full pursuit of players
+        HuntAll = 2,   // late: also drags off unsheltered residents
+    }
 
     /// <summary>
     /// M3: the relentless pursuer (GDD §4.1). State machine driven entirely by
@@ -55,8 +63,12 @@ namespace HollerHorror.Entities
         private float stateTimer;
         private int searchPointsLeft;
         private float windupUntil;
+        private Dialogue.NpcController npcPrey;
 
         public WendigoState State { get; private set; } = WendigoState.Patrol;
+
+        /// <summary>Set each frame by the escalation controller from the night phase.</summary>
+        public AggressionTier Aggression { get; set; } = AggressionTier.HuntPlayers;
 
         private void Awake()
         {
@@ -86,6 +98,15 @@ namespace HollerHorror.Entities
             EnterPatrol();
         }
 
+        /// <summary>The correct ritual unmakes it — stop hunting and leave the holler.</summary>
+        public void Banish()
+        {
+            if (agent != null && agent.isActiveAndEnabled)
+                agent.isStopped = true;
+            Debug.Log("[Wendigo] The name burned. It is unmade.");
+            gameObject.SetActive(false);
+        }
+
         private void Update()
         {
             switch (State)
@@ -95,6 +116,7 @@ namespace HollerHorror.Entities
                 case WendigoState.Chase: TickChase(); break;
                 case WendigoState.Search: TickSearch(); break;
                 case WendigoState.Feeding: TickFeeding(); break;
+                case WendigoState.StalkNpc: TickStalkNpc(); break;
             }
         }
 
@@ -111,6 +133,10 @@ namespace HollerHorror.Entities
         private void TickPatrol()
         {
             if (TryEscalate())
+                return;
+
+            // Late night with no player threat: go hunt a resident.
+            if (Aggression == AggressionTier.HuntAll && TryStalkNpc())
                 return;
 
             if (!agent.pathPending && agent.remainingDistance < 0.6f)
@@ -291,7 +317,9 @@ namespace HollerHorror.Entities
         /// <summary>Escalates to Chase (sight) or Investigate (sound). True if state changed.</summary>
         private bool TryEscalate()
         {
-            if (perception.State == AwarenessState.Alert && perception.VisibleTarget != null)
+            // Passive (dusk/early): it stalks and investigates but does not commit to a kill.
+            if (Aggression != AggressionTier.Passive &&
+                perception.State == AwarenessState.Alert && perception.VisibleTarget != null)
             {
                 EnterChase(perception.VisibleTarget);
                 return true;
@@ -305,6 +333,59 @@ namespace HollerHorror.Entities
             }
 
             return false;
+        }
+
+        // ---- NPC stalking (late night) ----
+
+        private bool TryStalkNpc()
+        {
+            var prey = NearestUnshelteredNpc();
+            if (prey == null)
+                return false;
+
+            npcPrey = prey;
+            State = WendigoState.StalkNpc;
+            agent.speed = investigateSpeed;
+            agent.SetDestination(prey.transform.position);
+            return true;
+        }
+
+        private void TickStalkNpc()
+        {
+            // A player threat always takes priority over hunting a resident.
+            if (TryEscalate())
+                return;
+
+            // Prey died, was sheltered, or we dropped to a calmer tier: abandon the hunt.
+            if (npcPrey == null || !npcPrey.IsAlive || npcPrey.IsSheltered() || Aggression != AggressionTier.HuntAll)
+            {
+                npcPrey = null;
+                EnterPatrol();
+                return;
+            }
+
+            agent.SetDestination(npcPrey.transform.position);
+            if (Vector3.Distance(transform.position, npcPrey.transform.position) <= attackRange)
+            {
+                WendigoAudio.PlayScreamAt(transform.position, loud: true);
+                npcPrey.Kill();
+                npcPrey = null;
+                EnterFeeding();
+            }
+        }
+
+        private Dialogue.NpcController NearestUnshelteredNpc()
+        {
+            Dialogue.NpcController nearest = null;
+            float best = float.MaxValue;
+            foreach (var npc in Dialogue.NpcRegistry.All)
+            {
+                if (npc == null || !npc.IsAlive || npc.IsSheltered())
+                    continue;
+                float d = Vector3.Distance(transform.position, npc.transform.position);
+                if (d < best) { best = d; nearest = npc; }
+            }
+            return nearest;
         }
 
         /// <summary>Random reachable point near center — rejects unreachable spots (wall tops, sealed platforms).</summary>
@@ -330,7 +411,7 @@ namespace HollerHorror.Entities
         private void OnGUI()
         {
             GUILayout.BeginArea(new Rect(Screen.width - 270, 90, 260, 44), GUI.skin.box);
-            GUILayout.Label($"Wendigo: {State}  (speed {agent.velocity.magnitude:F1})");
+            GUILayout.Label($"Wendigo: {State} [{Aggression}]  (spd {agent.velocity.magnitude:F1})");
             GUILayout.EndArea();
         }
     }

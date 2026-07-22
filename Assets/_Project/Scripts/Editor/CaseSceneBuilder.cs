@@ -1,5 +1,7 @@
 using System.IO;
 using HollerHorror.Clues;
+using HollerHorror.Entities;
+using Unity.AI.Navigation;
 using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
@@ -8,18 +10,25 @@ using Yarn.Unity;
 namespace HollerHorror.Editor
 {
     /// <summary>
-    /// Builds the M4 full-case scene: a mini-holler with base camp + clue board,
+    /// Builds the full-case scene: a mini-holler with base camp + clue board,
     /// three homesteads (Ada honest, Tetch withholding, Ruth mistaken), and a
-    /// physical evidence set with supporting, refutable, and negative clues —
-    /// a Wendigo case soluble end-to-end, committed at the board.
+    /// physical evidence set — a Wendigo case soluble end-to-end. The "Night
+    /// Hunt" variant (M6) adds the Wendigo, NavMesh, and the escalation clock so
+    /// the holler is dangerous while you deduce.
     /// </summary>
     public static class CaseSceneBuilder
     {
         private const string ScenePath = "Assets/_Project/Scenes/Case_Test.unity";
+        private const string HuntScenePath = "Assets/_Project/Scenes/CaseHunt_Test.unity";
         private const string YarnProjectPath = "Assets/_Project/Dialogue/HollerHorror.yarnproject";
 
         [MenuItem("Holler Horror/Build Case Test Scene")]
-        public static void Build()
+        public static void BuildCalm() => BuildInternal(withHunt: false, ScenePath);
+
+        [MenuItem("Holler Horror/Build Case (Night Hunt) Test Scene")]
+        public static void BuildHunt() => BuildInternal(withHunt: true, HuntScenePath);
+
+        private static void BuildInternal(bool withHunt, string scenePath)
         {
             AssetDatabase.SaveAssets();
             AssetDatabase.Refresh(ImportAssetOptions.ForceSynchronousImport);
@@ -46,10 +55,105 @@ namespace HollerHorror.Editor
             var player = GreyboxSceneBuilder.BuildPlayer(new Vector3(0, 0.05f, -28f));
             player.AddComponent<ClueBoardInteractor>();
             player.AddComponent<FieldJournal>();
+            player.AddComponent<HollerHorror.Player.PlayerHealth>(); // BuildPlayer already adds the noise emitter
 
-            Directory.CreateDirectory(Path.GetDirectoryName(ScenePath));
-            EditorSceneManager.SaveScene(scene, ScenePath);
-            Debug.Log($"[CaseSceneBuilder] Built and saved {ScenePath}");
+            if (withHunt)
+                BuildHuntLayer();
+
+            Directory.CreateDirectory(Path.GetDirectoryName(scenePath));
+            EditorSceneManager.SaveScene(scene, scenePath);
+            Debug.Log($"[CaseSceneBuilder] Built and saved {scenePath} (hunt={withHunt})");
+        }
+
+        private static void BuildHuntLayer()
+        {
+            // NavMesh over the whole holler, baked at runtime.
+            var navGo = new GameObject("NavMesh");
+            var surface = navGo.AddComponent<NavMeshSurface>();
+            surface.collectObjects = CollectObjects.All;
+            navGo.AddComponent<NavMeshBootstrap>();
+
+            // The night clock.
+            var clockGo = new GameObject("NightClock");
+            var clock = clockGo.AddComponent<NightClock>();
+            var clockSo = new SerializedObject(clock);
+            clockSo.FindProperty("sun").objectReferenceValue = FindDirectionalLight();
+            // Test pacing: reach the dangerous phases quickly. Real runs lengthen these (GDD: 30-50 min).
+            var durations = clockSo.FindProperty("phaseDurations");
+            durations.arraySize = 3;
+            durations.GetArrayElementAtIndex(0).floatValue = 40f; // Dusk
+            durations.GetArrayElementAtIndex(1).floatValue = 45f; // Early
+            durations.GetArrayElementAtIndex(2).floatValue = 45f; // Mid
+            clockSo.ApplyModifiedPropertiesWithoutUndo();
+
+            // The Wendigo.
+            var wendigo = BuildWendigo(new Vector3(20f, 0f, 30f));
+
+            // Escalation glue.
+            var escGo = new GameObject("Escalation");
+            var esc = escGo.AddComponent<EscalationController>();
+            var escSo = new SerializedObject(esc);
+            escSo.FindProperty("wendigo").objectReferenceValue = wendigo;
+            escSo.FindProperty("clock").objectReferenceValue = clock;
+            escSo.ApplyModifiedPropertiesWithoutUndo();
+
+            // Senses debug so noise rings/audio are visible while hunting.
+            var debugGo = new GameObject("SensesDebug");
+            debugGo.AddComponent<HollerHorror.Debugging.NoiseDebugRenderer>();
+            debugGo.AddComponent<HollerHorror.Debugging.PlaceholderFootstepAudio>();
+        }
+
+        private static Light FindDirectionalLight()
+        {
+            foreach (var light in Object.FindObjectsByType<Light>(FindObjectsInactive.Include))
+                if (light.type == LightType.Directional)
+                    return light;
+            return null;
+        }
+
+        private static WendigoController BuildWendigo(Vector3 position)
+        {
+            var wendigo = new GameObject("Wendigo");
+            wendigo.transform.position = position;
+
+            var body = GameObject.CreatePrimitive(PrimitiveType.Capsule);
+            body.name = "Body";
+            body.transform.SetParent(wendigo.transform);
+            body.transform.localPosition = new Vector3(0, 1.3f, 0);
+            body.transform.localScale = new Vector3(0.9f, 1.3f, 0.9f);
+
+            var head = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            head.name = "Head";
+            Object.DestroyImmediate(head.GetComponent<Collider>());
+            head.transform.SetParent(wendigo.transform);
+            head.transform.localPosition = new Vector3(0, 2.5f, 0.25f);
+            head.transform.localScale = new Vector3(0.35f, 0.45f, 0.55f);
+
+            var agent = wendigo.AddComponent<UnityEngine.AI.NavMeshAgent>();
+            agent.height = 2.6f;
+            agent.radius = 0.45f;
+            agent.acceleration = 14f;
+            agent.angularSpeed = 240f;
+
+            var perception = wendigo.AddComponent<HollerHorror.Senses.EntityPerception>();
+            var perceptionSo = new SerializedObject(perception);
+            perceptionSo.FindProperty("eyeHeight").floatValue = 2.5f;
+            perceptionSo.FindProperty("visionRange").floatValue = 30f;
+            perceptionSo.FindProperty("visionFovDegrees").floatValue = 140f;
+            perceptionSo.FindProperty("hearingSensitivity").floatValue = 1.25f;
+            perceptionSo.ApplyModifiedPropertiesWithoutUndo();
+
+            var controller = wendigo.AddComponent<WendigoController>();
+            wendigo.AddComponent<WendigoAmbientCalls>();
+
+            var display = wendigo.AddComponent<HollerHorror.Debugging.PerceptionDebugDisplay>();
+            var displaySo = new SerializedObject(display);
+            displaySo.FindProperty("perception").objectReferenceValue = perception;
+            displaySo.FindProperty("body").objectReferenceValue = body.GetComponent<Renderer>();
+            displaySo.FindProperty("controlRotation").boolValue = false;
+            displaySo.ApplyModifiedPropertiesWithoutUndo();
+
+            return controller;
         }
 
         private static void BuildBaseCamp()
