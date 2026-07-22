@@ -56,6 +56,7 @@ namespace HollerHorror.Dialogue
         private void SyncBoardFacts()
         {
             runner.VariableStorage.SetValue("$has_claw_clue", BoardMentions("claw"));
+            runner.VariableStorage.SetValue("$has_springhouse_clue", BoardMentions("spring"));
         }
 
         private static bool BoardMentions(string term)

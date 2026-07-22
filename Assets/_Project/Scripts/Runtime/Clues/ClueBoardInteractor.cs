@@ -27,6 +27,7 @@ namespace HollerHorror.Clues
         private ClueCardView stringFromCard;
         private ClueCardView hoveredCard;
         private LineRenderer stringPreview;
+        private EntityId pendingDeclaration = EntityId.Unknown;
 
         private void Awake()
         {
@@ -211,6 +212,8 @@ namespace HollerHorror.Clues
                     GUILayout.Label($"theory: {ClueTheme.TheoryLabel(data.Theory)}");
                     GUILayout.EndArea();
                 }
+
+                DrawDeclarationPanel();
             }
             else if (controller.enabled && NearBoard)
             {
@@ -218,6 +221,43 @@ namespace HollerHorror.Clues
                 GUILayout.Label("[E] Examine the board");
                 GUILayout.EndArea();
             }
+        }
+
+        /// <summary>The M4 commitment moment: declare the entity at the board. One shot.</summary>
+        private void DrawDeclarationPanel()
+        {
+            var director = Dialogue.CaseDirector.Instance;
+            if (director == null)
+                return;
+
+            GUILayout.BeginArea(new Rect(Screen.width - 260, 10, 250, 190), GUI.skin.box);
+
+            if (director.HasDeclared)
+            {
+                GUILayout.Label(director.DeclaredCorrectly
+                    ? $"You named it: {director.DeclaredEntity}.\n\nThe evidence held. Dawn will come.\n(M5: the banishing ritual goes here.)"
+                    : $"You named {director.DeclaredEntity}.\n\nThe holler knows you guessed wrong.\n(M5: this is where the backfire hits.)");
+            }
+            else if (pendingDeclaration == EntityId.Unknown)
+            {
+                GUILayout.Label("COMMIT — what preys on this holler?");
+                if (GUILayout.Button("The Wendigo")) pendingDeclaration = EntityId.Wendigo;
+                if (GUILayout.Button("The Fetch")) pendingDeclaration = EntityId.Fetch;
+                if (GUILayout.Button("The Hollow")) pendingDeclaration = EntityId.Hollow;
+            }
+            else
+            {
+                GUILayout.Label($"Declare {pendingDeclaration}?\nThere is no taking it back.");
+                if (GUILayout.Button("Commit"))
+                {
+                    director.Declare(pendingDeclaration);
+                    pendingDeclaration = EntityId.Unknown;
+                }
+                if (GUILayout.Button("Not yet"))
+                    pendingDeclaration = EntityId.Unknown;
+            }
+
+            GUILayout.EndArea();
         }
     }
 }

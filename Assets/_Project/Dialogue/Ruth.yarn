@@ -1,0 +1,38 @@
+// Ruth Combs — the Mistaken type (GDD §6): sincere, superstitious, wrong.
+// Her testimony points at the Hollow; the springhouse evidence lets players
+// refute half of it and learn to weigh sources.
+
+title: Ruth_Start
+---
+<<declare $has_springhouse_clue = false>>
+<<declare $ruth_cold_told = false>>
+<<declare $ruth_birds_told = false>>
+<<declare $ruth_pressed = false>>
+Ruth: Keep your voices low. It hears the valley. I'd swear on the book it does.
+<<jump Ruth_Hub>>
+===
+
+title: Ruth_Hub
+---
+-> Ask what she thinks is out there. <<if not $ruth_cold_told>>
+    Ruth: It's the land gone wrong. The Hollow, like my granny called it.
+    Ruth: My springhouse has turned cold as a grave since Sunday. Cold spots. That's the Hollow's sign, plain as print.
+    <<set $ruth_cold_told = true>>
+    <<testimony "Cold spots in the springhouse" "Ruth: the springhouse has turned 'cold as a grave' since Sunday. She calls it the Hollow's sign.">>
+    <<jump Ruth_Hub>>
+-> Ask what else she's noticed. <<if not $ruth_birds_told>>
+    Ruth: The birds went quiet on me Tuesday, up past the tree line. Dead quiet, all at once.
+    Ruth: Quiet birds and cold air. You do the sums, stranger.
+    <<set $ruth_birds_told = true>>
+    <<testimony "The birds went quiet Tuesday" "Ruth: birdsong stopped dead all at once, up past the tree line, Tuesday last.">>
+    <<jump Ruth_Hub>>
+-> Ask about the springhouse cold. <<if $has_springhouse_clue and not $ruth_pressed>>
+    Ruth: ...You crawled under my springhouse? Well. Yes. The spring runs beneath the floor.
+    Ruth: It's always run cool. Not LIKE this, though. Well. Maybe like this. Every summer, some.
+    Ruth: But the birds, stranger. I'll stand on the birds.
+    <<set $ruth_pressed = true>>
+    <<testimony "Ruth concedes the springhouse" "Shown the spring channel, Ruth allows the cold is 'maybe' just the spring. The quiet birds she stands by.">>
+    <<jump Ruth_Hub>>
+-> Leave her be.
+    Ruth: Salt your doorway tonight. Can't hurt, can it.
+===
