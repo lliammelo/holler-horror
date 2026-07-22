@@ -173,6 +173,26 @@ Appalachian folk horror concept art, cinematic, painterly, restrained dread. A l
 ### 9. CLUE BOARD KEY ART — *Steam capsule candidate; try Nano Banana Pro*
 Cinematic hero shot, folk horror, painterly and tactile, warm lantern light against cold dark, shallow depth of field, no legible text, no watermark. A cork detective board in warm lantern light, pinned with weathered paper clue cards and old photographs connected by taut red yarn, a hand-drawn map of a mountain holler in one corner, contradictions circled in pencil. Paper texture, pin shadows, intimate and obsessive. A story half-solved.
 
+### 10. MAIN MENU KEY ART — *the watching eye*
+
+> Deliberately steps outside the folk-horror language of everything above —
+> this is cosmic, symbolic, and that's allowed on a menu where it wouldn't be
+> in-game. Reads as "the valley itself is awake and watching," which is the
+> Hollow's idea taken to its most literal.
+>
+> Two clauses are load-bearing: **"half lost behind drifting cloud and haze so
+> it reads as part of the sky itself"** stops the eye looking like a sticker,
+> and **"empty dark sky in the upper left for a title"** reserves space for the
+> logo and menu items. Menu art with no negative space is unusable.
+>
+> Good candidate for **Nano Banana Pro** rather than Soul Cinema: it's a
+> standalone piece (consistency doesn't matter), it's displayed full-screen so
+> 4K helps, and it has several elements that must relate correctly — which
+> Gemini-family models follow more reliably. Keep the painterly clause or it
+> will drift photoreal.
+
+Painterly digital illustration, visible brushwork, muted limited palette, not photorealistic. Appalachian folk horror key art, cinematic and restrained. A lone old sedan drives away from the viewer down a narrow dirt road at night, red tail lights glowing, headlights cutting a cone of light through thin ground fog. Dense forest crowds in on both sides, tall bare hardwoods and dark pines silhouetted almost black. Above, filling the entire night sky, an enormous eye watches the road below: the iris vast and dim, the pupil a deep black well, half lost behind drifting cloud and haze so it reads as part of the sky itself rather than pasted onto it. Cold blue night against warm amber headlights. Quiet, oppressive, the feeling of being watched by something too large to run from. A large area of empty dark sky in the upper left, clear of detail, for a title to sit. No text, no watermark, no lettering.
+
 ---
 
 ## 6. Saving your work (do not skip)
