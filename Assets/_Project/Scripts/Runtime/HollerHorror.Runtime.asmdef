@@ -6,7 +6,10 @@
         "Unity.Netcode.Runtime",
         "Facepunch Transport for Netcode for GameObjects",
         "Unity.AI.Navigation",
-        "YarnSpinner.Unity"
+        "YarnSpinner.Unity",
+        "Unity.RenderPipelines.Core.Runtime",
+        "Unity.RenderPipelines.Universal.Runtime",
+        "UnityEngine.UI"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

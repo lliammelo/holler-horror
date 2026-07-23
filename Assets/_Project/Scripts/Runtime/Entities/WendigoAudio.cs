@@ -14,6 +14,9 @@ namespace HollerHorror.Entities
 
         public static void PlayScreamAt(Vector3 position, bool loud)
         {
+            // The scream silences the night — insects stop (GDD §9).
+            Presentation.Ambience.Report(loud ? 1f : 0.5f);
+
             if (scream == null)
                 scream = SynthesizeScream();
 

@@ -65,6 +65,10 @@ namespace HollerHorror.Player
                 Current -= drainInDark * Time.deltaTime;
 
             Current = Mathf.Clamp(Current, 0f, max);
+
+            // The Hollow's silence — the deeper the dark, the deader the night.
+            if (InHollow)
+                Presentation.Ambience.Report(0.85f);
         }
 
         private bool NearWardingLight()

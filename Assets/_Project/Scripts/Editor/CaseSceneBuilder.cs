@@ -69,6 +69,8 @@ namespace HollerHorror.Editor
             if (withHunt)
                 BuildHuntLayer();
 
+            BuildPresentationLayer();
+
             Directory.CreateDirectory(Path.GetDirectoryName(scenePath));
             EditorSceneManager.SaveScene(scene, scenePath);
             Debug.Log($"[CaseSceneBuilder] Built and saved {scenePath} (hunt={withHunt})");
@@ -129,6 +131,8 @@ namespace HollerHorror.Editor
             player.AddComponent<FieldJournal>();
             player.AddComponent<EntityJournal>();
             player.AddComponent<HollerHorror.Player.PlayerSanity>();
+
+            BuildPresentationLayer();
 
             Directory.CreateDirectory(Path.GetDirectoryName(scenePath));
             EditorSceneManager.SaveScene(scene, scenePath);
@@ -244,6 +248,8 @@ namespace HollerHorror.Editor
             player.AddComponent<FieldJournal>();
             player.AddComponent<EntityJournal>();
 
+            BuildPresentationLayer();
+
             Directory.CreateDirectory(Path.GetDirectoryName(scenePath));
             EditorSceneManager.SaveScene(scene, scenePath);
             Debug.Log($"[CaseSceneBuilder] Built and saved {scenePath} (Fetch case)");
@@ -316,6 +322,15 @@ namespace HollerHorror.Editor
             so.FindProperty("nameTag").objectReferenceValue = nameTag;
             so.ApplyModifiedPropertiesWithoutUndo();
             return controller;
+        }
+
+        /// <summary>M9 polish common to every case scene: post-process grade, ambience, pause/return-to-menu.</summary>
+        private static void BuildPresentationLayer()
+        {
+            var go = new GameObject("Presentation");
+            go.AddComponent<HollerHorror.Presentation.AtmosphereController>();
+            go.AddComponent<HollerHorror.Presentation.AmbientAudioDirector>();
+            go.AddComponent<HollerHorror.UI.PauseController>();
         }
 
         private static void BuildHuntLayer()

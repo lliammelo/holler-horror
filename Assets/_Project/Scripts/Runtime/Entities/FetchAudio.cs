@@ -15,6 +15,7 @@ namespace HollerHorror.Entities
 
         public static void PlayVoiceFromTheTreeline(Vector3 position)
         {
+            Presentation.Ambience.Report(0.7f); // the night listens back
             var snippet = VoiceEchoLibrary.GetRandomSnippet(3.5f, 1f);
             if (snippet != null && TryPlayCapturedVoice(position, snippet.Value.packets))
                 return;

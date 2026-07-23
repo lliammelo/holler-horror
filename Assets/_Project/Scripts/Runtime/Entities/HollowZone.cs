@@ -26,6 +26,8 @@ namespace HollerHorror.Entities
 
         private Renderer visual;
 
+        private float noiseSeed;
+
         public float Radius => radius;
 
         public static bool IsInside(Vector3 position)
@@ -44,6 +46,8 @@ namespace HollerHorror.Entities
 
         private void Start()
         {
+            noiseSeed = Random.Range(0f, 1000f); // per-zone wander offset
+
             var sphere = GameObject.CreatePrimitive(PrimitiveType.Sphere);
             sphere.name = "ZoneVisual";
             Destroy(sphere.GetComponent<Collider>());
@@ -96,7 +100,7 @@ namespace HollerHorror.Entities
         private Vector3 GetWanderDir()
         {
             // Smooth low-frequency wander from perlin noise.
-            float t = Time.time * 0.15f + GetInstanceID();
+            float t = Time.time * 0.15f + noiseSeed;
             return new Vector3(Mathf.PerlinNoise(t, 0f) - 0.5f, 0f, Mathf.PerlinNoise(0f, t) - 0.5f);
         }
 
