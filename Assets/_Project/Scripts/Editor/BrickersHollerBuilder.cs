@@ -92,6 +92,9 @@ namespace HollerHorror.Editor
             genSo.FindProperty("hollowSet").objectReferenceValue = hollowSet;
             genSo.ApplyModifiedPropertiesWithoutUndo();
 
+            // The broader systemic cast: always present, knowledge dealt per run.
+            BuildResidents(director);
+
             // --- Player + presentation ---
             var player = GreyboxSceneBuilder.BuildPlayer(new Vector3(0, 0.05f, -76f));
             player.AddComponent<ClueBoardInteractor>();
@@ -427,6 +430,66 @@ namespace HollerHorror.Editor
 
             Resolver(set, hollow);
             return set;
+        }
+
+        private static readonly string[] ResidentNames =
+        {
+            "Widow Combs", "Harlan Boggs", "Cy Tetch", "Nan Slone",
+            "Elder Pike", "Ruth Ann", "Josiah Cole", "Merle Bricker",
+        };
+
+        /// <summary>
+        /// Systemic residents at spare POI anchors, plus the ResidentDirector that
+        /// deals their reliability + knowledge each run. Additive to the authored
+        /// Yarn keystones in the entity sets.
+        /// </summary>
+        // Their own spots near POIs, clear of the authored NPCs' anchors.
+        private static readonly Vector3[] ResidentSpots =
+        {
+            new(-44, 0, -30), new(48, 0, -6), new(56, 0, 6),
+            new(-38, 0, 44), new(42, 0, 48), new(4, 0, -18),
+        };
+
+        private static void BuildResidents(CaseDirector director)
+        {
+            var root = new GameObject("Residents").transform;
+            var rng = new System.Random(5);
+
+            for (int i = 0; i < ResidentSpots.Length && i < ResidentNames.Length; i++)
+            {
+                string name = ResidentNames[i];
+
+                var go = new GameObject($"Resident_{name.Replace(' ', '_')}");
+                go.transform.SetParent(root);
+                go.transform.position = ResidentSpots[i] + new Vector3(0, 0.05f, 0);
+
+                var body = GameObject.CreatePrimitive(PrimitiveType.Capsule);
+                body.name = "Body";
+                body.transform.SetParent(go.transform);
+                body.transform.localPosition = new Vector3(0, 1f, 0);
+                body.GetComponent<Renderer>().sharedMaterial =
+                    Mat($"Resident_{name.Replace(' ', '_')}",
+                        new Color(0.3f + (float)rng.NextDouble() * 0.25f, 0.3f + (float)rng.NextDouble() * 0.2f, 0.3f));
+
+                var tag = new GameObject("NameTag");
+                tag.transform.SetParent(go.transform);
+                tag.transform.localPosition = new Vector3(0, 2.35f, 0);
+                tag.AddComponent<HollerHorror.Presentation.Billboard>();
+                var text = tag.AddComponent<TextMesh>();
+                text.text = name;
+                text.characterSize = 0.2f;
+                text.fontSize = 32;
+                text.anchor = TextAnchor.MiddleCenter;
+                text.color = new Color(0.9f, 0.88f, 0.8f);
+
+                go.AddComponent<Resident>().ResidentName = name;
+            }
+
+            var dirGo = new GameObject("ResidentDirector");
+            var resDir = dirGo.AddComponent<ResidentDirector>();
+            var so = new SerializedObject(resDir);
+            so.FindProperty("director").objectReferenceValue = director;
+            so.ApplyModifiedPropertiesWithoutUndo();
         }
 
         private static void Npc(GameObject set, string name, string node, PointOfInterest poi, int anchorIndex, Color tint)
