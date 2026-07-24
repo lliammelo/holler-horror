@@ -173,6 +173,12 @@ namespace HollerHorror.Editor
 
             var emitter = player.AddComponent<HollerHorror.Senses.FootstepNoiseEmitter>();
 
+            // Carried light — the holler is too big and too dark without one.
+            var torch = player.AddComponent<HollerHorror.Player.Flashlight>();
+            var torchSo = new SerializedObject(torch);
+            torchSo.FindProperty("mountPoint").objectReferenceValue = camGo.transform;
+            torchSo.ApplyModifiedPropertiesWithoutUndo();
+
             var hud = player.AddComponent<PlayerDebugHud>();
             var hudSo = new SerializedObject(hud);
             hudSo.FindProperty("controller").objectReferenceValue = controller;

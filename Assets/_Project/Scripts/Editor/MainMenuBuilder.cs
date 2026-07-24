@@ -184,6 +184,7 @@ namespace HollerHorror.Editor
             var wanted = new[]
             {
                 ScenePath,
+                "Assets/_Project/Scenes/BrickersHoller.unity",
                 "Assets/_Project/Scenes/CaseHunt_Test.unity",
                 "Assets/_Project/Scenes/FetchCase_Test.unity",
                 "Assets/_Project/Scenes/HollowCase_Test.unity",

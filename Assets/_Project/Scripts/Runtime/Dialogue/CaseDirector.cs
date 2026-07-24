@@ -23,6 +23,12 @@ namespace HollerHorror.Dialogue
         private EntityId activeEntity = EntityId.Wendigo;
 
         public EntityId ActiveEntity => activeEntity;
+
+        /// <summary>
+        /// Set by CaseGenerator during Awake, before Start reads it. Lets one map
+        /// host a different truth each run instead of baking it into the scene.
+        /// </summary>
+        public void SetActiveEntity(EntityId entity) => activeEntity = entity;
         public EntityId PreparedRitual { get; private set; } = EntityId.Unknown;
         public bool CaseWon { get; private set; }
         public bool Backfired { get; private set; }
@@ -38,6 +44,17 @@ namespace HollerHorror.Dialogue
         private void Start()
         {
             var storage = GetComponent<DialogueRunner>().VariableStorage;
+
+            // Expose the run's truth to dialogue so residents can speak to the
+            // entity that's actually present.
+            storage.SetValue("$active_entity", activeEntity switch
+            {
+                EntityId.Wendigo => "wendigo",
+                EntityId.Fetch => "fetch",
+                EntityId.Hollow => "hollow",
+                _ => "unknown",
+            });
+
             string nameHolder = Random.value < 0.5f ? "ada" : "tetch";
             storage.SetValue("$name_holder", nameHolder);
             Debug.Log($"[CaseDirector] Active entity: {activeEntity}. Name-holder: {nameHolder}");

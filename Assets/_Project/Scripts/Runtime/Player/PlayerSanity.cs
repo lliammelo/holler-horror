@@ -16,8 +16,8 @@ namespace HollerHorror.Player
         public static PlayerSanity Local { get; private set; }
 
         [SerializeField] private float max = 100f;
-        [SerializeField, Tooltip("Sanity lost per second in darkness.")]
-        private float drainInDark = 2.5f;
+        [SerializeField, Tooltip("Sanity lost per second in darkness. Carrying a lit torch counts as light.")]
+        private float drainInDark = 1.6f;
         [SerializeField, Tooltip("Extra sanity lost per second inside a Hollow zone.")]
         private float drainInHollow = 9f;
         [SerializeField, Tooltip("Sanity regained per second in adequate light.")]

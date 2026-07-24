@@ -23,6 +23,8 @@ Design source of truth: [Docs/holler-horror-gdd.md](Docs/holler-horror-gdd.md). 
 - Serialized fields: `[SerializeField] private`, camelCase, with `[Tooltip]` where the name alone is ambiguous. No public fields.
 - Design-tunable numbers live in serialized fields (later: ScriptableObject configs), never hard-coded constants in logic.
 - Comments explain constraints and intent, not restate code.
+- **`EntityId` collision:** Unity 6 ships `UnityEngine.EntityId`. Any file that imports both `UnityEngine` and `HollerHorror.Clues` and uses the bare name needs
+  `using EntityId = HollerHorror.Clues.EntityId;`. Files *inside* the `HollerHorror.Clues` namespace resolve it without help.
 - Systems that later feed entity AI (noise, visibility, sanity) must expose clean read-only seams — see `FirstPersonController.CurrentSpeed` / `Locomotion` as the pattern.
 
 ## Multiplayer discipline (from M1 onward)

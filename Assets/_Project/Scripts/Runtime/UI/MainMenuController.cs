@@ -18,16 +18,19 @@ namespace HollerHorror.UI
         [SerializeField] private Button hollowButton;
         [SerializeField] private Button quitButton;
 
+        [SerializeField, Tooltip("The real map — entity is rolled at run start by CaseGenerator.")]
+        private string hollerScene = "BrickersHoller";
         [SerializeField] private string wendigoScene = "CaseHunt_Test";
         [SerializeField] private string fetchScene = "FetchCase_Test";
         [SerializeField] private string hollowScene = "HollowCase_Test";
 
         private void Awake()
         {
-            // New Investigation rolls a random entity — the run's entity is meant
-            // to be unknown going in (GDD §3). The per-entity buttons stay for testing.
+            // New Investigation drops you into Bricker's Holler, where the entity
+            // is rolled per run — you go in not knowing (GDD §3). The per-entity
+            // buttons remain as direct entry into the old single-entity test scenes.
             if (newInvestigationButton != null)
-                newInvestigationButton.onClick.AddListener(LoadRandomCase);
+                newInvestigationButton.onClick.AddListener(() => LoadCase(hollerScene));
 
             Bind(wendigoButton, wendigoScene);
             Bind(fetchButton, fetchScene);
@@ -40,11 +43,6 @@ namespace HollerHorror.UI
             Cursor.visible = true;
         }
 
-        private void LoadRandomCase()
-        {
-            var pool = new[] { wendigoScene, fetchScene, hollowScene };
-            LoadCase(pool[Random.Range(0, pool.Length)]);
-        }
 
         private void Bind(Button button, string sceneName)
         {

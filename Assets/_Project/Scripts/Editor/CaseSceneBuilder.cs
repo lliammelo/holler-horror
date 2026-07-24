@@ -288,7 +288,7 @@ namespace HollerHorror.Editor
                 "Still water, no reflection", "The shallows lie dead flat. You lean over and nothing leans back.", "the creek");
         }
 
-        private static FetchController BuildFetchEntity(Vector3 position)
+        internal static FetchController BuildFetchEntity(Vector3 position)
         {
             var fetch = new GameObject("Fetch");
             fetch.transform.position = position;
@@ -380,7 +380,7 @@ namespace HollerHorror.Editor
             return null;
         }
 
-        private static WendigoController BuildWendigo(Vector3 position)
+        internal static WendigoController BuildWendigo(Vector3 position)
         {
             var wendigo = new GameObject("Wendigo");
             wendigo.transform.position = position;

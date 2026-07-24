@@ -78,7 +78,7 @@ namespace HollerHorror.Editor
             return go;
         }
 
-        internal static void BuildNpc(string npcName, string startNode, Vector3 position, Color tint)
+        internal static GameObject BuildNpc(string npcName, string startNode, Vector3 position, Color tint)
         {
             var npc = new GameObject($"NPC_{npcName.Replace(' ', '_')}");
             npc.transform.position = position;
@@ -93,7 +93,7 @@ namespace HollerHorror.Editor
             var labelGo = new GameObject("NameTag");
             labelGo.transform.SetParent(npc.transform);
             labelGo.transform.localPosition = new Vector3(0, 2.35f, 0);
-            labelGo.transform.rotation = Quaternion.Euler(0, 180, 0); // readable from camp center
+            labelGo.AddComponent<HollerHorror.Presentation.Billboard>(); // always faces the player
             var label = labelGo.AddComponent<TextMesh>();
             label.text = npcName;
             label.characterSize = 0.22f;
@@ -108,6 +108,7 @@ namespace HollerHorror.Editor
             var controllerSo = new SerializedObject(controller);
             controllerSo.FindProperty("bodyRenderer").objectReferenceValue = body.GetComponent<Renderer>();
             controllerSo.ApplyModifiedPropertiesWithoutUndo();
+            return npc;
         }
 
         private static void BuildEvidenceProp(Vector3 position)

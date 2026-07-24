@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+using HollerHorror.Player;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.SceneManagement;
@@ -27,7 +29,30 @@ namespace HollerHorror.UI
             Time.timeScale = paused ? 0f : 1f;
             Cursor.lockState = paused ? CursorLockMode.None : CursorLockMode.Locked;
             Cursor.visible = paused;
+
+            // Update() runs even at timeScale 0, so the controller keeps reading
+            // mouse-look and the camera spins under the menu. Freeze player input
+            // while paused, restore only what we disabled.
+            if (paused)
+            {
+                // Snapshot first: disabling a controller unregisters it from the
+                // registry we'd otherwise be iterating.
+                suspended.Clear();
+                suspended.AddRange(PlayerRegistry.All);
+                foreach (var player in suspended)
+                    if (player != null)
+                        player.enabled = false;
+            }
+            else
+            {
+                foreach (var player in suspended)
+                    if (player != null)
+                        player.enabled = true;
+                suspended.Clear();
+            }
         }
+
+        private readonly List<FirstPersonController> suspended = new();
 
         private void OnGUI()
         {
